@@ -1,0 +1,354 @@
+/* NOVO FOOTER - DESIGN MODERNO */
+.footer {
+  background: #0a0a0a;
+  color: #ffffff;
+  padding: 100px 0 40px;
+  border-top: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+.footer .container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* FOOTER CONTENT GRID */
+.footer-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1.5fr;
+  gap: 80px;
+  margin-bottom: 80px;
+}
+
+/* FOOTER SECTION */
+.footer-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.footer-section h4 {
+  color: #d4af37;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2.5px;
+  margin-bottom: 30px;
+  position: relative;
+  padding-bottom: 15px;
+}
+
+.footer-section h4::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 40px;
+  height: 2px;
+  background: #d4af37;
+}
+
+/* FOOTER LOGO */
+.footer-logo {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  text-decoration: none;
+  margin-bottom: 25px;
+  transition: all 0.3s ease;
+}
+
+.footer-logo:hover {
+  transform: translateX(8px);
+}
+
+.footer-logo-img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  filter: grayscale(100%) brightness(1.05);
+  opacity: 0.9;
+  transition: all 0.3s ease;
+}
+
+.footer-logo:hover .footer-logo-img {
+  opacity: 1;
+  filter: grayscale(70%) brightness(1.15);
+}
+
+.footer-logo div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.footer-logo .logo-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.footer-logo .logo-sub {
+  font-size: 11px;
+  color: #888;
+  font-weight: 500;
+}
+
+/* FOOTER DESCRIPTION */
+.footer-desc {
+  font-size: 14px;
+  line-height: 1.8;
+  color: #888;
+  margin-top: 10px;
+}
+
+/* FOOTER LINKS */
+.footer-section ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.footer-section li a {
+  color: #888;
+  text-decoration: none;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  display: inline-block;
+  position: relative;
+}
+
+.footer-section li a::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 0;
+  height: 1px;
+  background: #d4af37;
+  transition: width 0.3s ease;
+}
+
+.footer-section li a:hover {
+  color: #d4af37;
+}
+
+.footer-section li a:hover::before {
+  width: 100%;
+}
+
+/* FOOTER CONTACT INFO */
+.footer-contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.footer-contact-info p {
+  font-size: 14px;
+  color: #888;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.3s ease;
+}
+
+.footer-contact-info p:hover {
+  color: #d4af37;
+  transform: translateX(5px);
+}
+
+.footer-contact-info i {
+  color: #d4af37;
+  width: 16px;
+  text-align: center;
+  font-size: 16px;
+}
+
+/* FOOTER SOCIAL */
+.footer-social {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.footer-social a {
+  width: 38px;
+  height: 38px;
+  background: rgba(212, 175, 55, 0.08);
+  border: 1px solid rgba(212, 175, 55, 0.15);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #d4af37;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  font-size: 16px;
+}
+
+.footer-social a:hover {
+  background: #d4af37;
+  color: #0a0a0a;
+  border-color: #d4af37;
+  transform: translateY(-4px);
+}
+
+/* FOOTER DIVIDER */
+.footer-divider {
+  height: 1px;
+  background: rgba(212, 175, 55, 0.1);
+  margin: 80px 0;
+}
+
+/* FOOTER BOTTOM */
+.footer-bottom {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 40px;
+}
+
+.footer-copyright {
+  font-size: 13px;
+  color: #666;
+  text-align: center;
+  width: 100%;
+}
+
+/* FOOTER KEALABS */
+.footer-kealabs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 28px;
+  background: rgba(212, 175, 55, 0.06);
+  border: 1px solid rgba(212, 175, 55, 0.12);
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+.footer-kealabs:hover {
+  background: rgba(212, 175, 55, 0.1);
+  border-color: rgba(212, 175, 55, 0.2);
+  transform: translateY(-2px);
+}
+
+.kealabs-logo {
+  width: 124px !important;
+  height: 40px !important;
+  object-fit: contain;
+  filter: grayscale(100%) brightness(0.95);
+  opacity: 0.85;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.footer-kealabs:hover .kealabs-logo {
+  opacity: 1;
+  filter: grayscale(75%) brightness(1.05);
+}
+
+.kealabs-info {
+  display: none;
+}
+
+/* FOOTER NAV LOGO */
+.footer-nav-logo {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+.nav-kealabs-logo {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  filter: grayscale(100%) brightness(0.95);
+  opacity: 0.8;
+  transition: all 0.3s ease;
+}
+
+.footer-nav-logo:hover .nav-kealabs-logo {
+  opacity: 1;
+  filter: grayscale(70%) brightness(1.1);
+}
+
+/* FOOTER KEALABS COLUMN */
+.footer-kealabs-column {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.kealabs-logo-container {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.kealabs-branding {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+.kealabs-column-logo {
+  width: 124px !important;
+  height: 40px !important;
+  object-fit: contain;
+  filter: grayscale(100%) brightness(1);
+  opacity: 0.9;
+  transition: all 0.3s ease;
+}
+
+.kealabs-logo-container:hover .kealabs-column-logo {
+  opacity: 1;
+  filter: grayscale(100%) brightness(1.1);
+  transform: scale(1.05);
+}
+
+@media (max-width: 1024px) {
+  .footer-content {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 60px;
+  }
+}
+
+@media (max-width: 768px) {
+  .footer {
+    padding: 60px 0 30px;
+  }
+
+  .footer-content {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .footer-bottom {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .footer-kealabs {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .footer-section h4::after {
+    display: none;
+  }
+
+  .footer-section li a:hover::before {
+    width: 0;
+  }
+
+  .footer-contact-info p:hover {
+    transform: none;
+  }
+}
