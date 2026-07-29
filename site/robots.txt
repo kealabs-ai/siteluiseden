@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /assets/
+
+Sitemap: https://seudominio.com.br/sitemap.xml
+
+# Delay para bots
+Crawl-delay: 1

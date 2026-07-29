@@ -1,44 +1,50 @@
 .contact-page {
-  flex: 1;
+  width: 100%;
 }
 
 .contact-content {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 40px;
-  padding: 40px 20px;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  padding: 80px 0;
 }
 
-.contact-info,
-.contact-form {
-  background: var(--white);
-  padding: 30px;
-  border-radius: 15px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
 }
 
-.contact-info h2,
-.contact-form h2 {
-  color: var(--primary-green);
-  margin-bottom: 25px;
-  font-size: 22px;
+.contact-info h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 32px;
+  margin-bottom: 20px;
+  color: #1a1a1a;
 }
 
 .info-item {
   display: flex;
-  gap: 15px;
-  margin-bottom: 25px;
+  gap: 20px;
 }
 
 .info-icon {
-  font-size: 28px;
+  width: 50px;
+  height: 50px;
+  background: #f4e4c1;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #2d5016;
+  font-size: 24px;
   flex-shrink: 0;
 }
 
 .info-item strong {
   display: block;
-  color: var(--primary-green);
+  color: #2d5016;
   margin-bottom: 5px;
+  font-weight: 600;
 }
 
 .info-item p {
@@ -48,47 +54,74 @@
 }
 
 .info-item a {
-  color: var(--primary-green);
+  color: #2d5016;
   text-decoration: none;
   font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.info-item a:hover {
+  color: #d4af37;
 }
 
 .social-links {
   display: flex;
-  gap: 12px;
-  margin-top: 25px;
-  padding-top: 25px;
-  border-top: 1px solid #eee;
+  gap: 15px;
+  margin-top: 20px;
 }
 
 .social-icon {
-  width: 40px;
-  height: 40px;
-  background: var(--light-yellow);
+  width: 45px;
+  height: 45px;
+  background: #2d5016;
+  color: #ffffff;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   text-decoration: none;
-  font-size: 18px;
   transition: all 0.3s ease;
+  font-size: 18px;
 }
 
 .social-icon:hover {
-  background: var(--primary-green);
-  transform: translateY(-3px);
+  background: #d4af37;
+  color: #2d5016;
+  transform: translateY(-5px);
+}
+
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.contact-form h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 32px;
+  margin-bottom: 20px;
+  color: #1a1a1a;
+}
+
+.success-message {
+  background: #4caf50;
+  color: #ffffff;
+  padding: 15px;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 600;
+  animation: slideDown 0.3s ease;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  margin-bottom: 20px;
 }
 
 .form-group label {
   font-weight: 600;
   margin-bottom: 8px;
-  color: var(--primary-green);
+  color: #2d5016;
   font-size: 14px;
 }
 
@@ -96,7 +129,7 @@
 .form-group select,
 .form-group textarea {
   padding: 12px 15px;
-  border: 2px solid #eee;
+  border: 2px solid #ddd;
   border-radius: 8px;
   font-family: inherit;
   font-size: 14px;
@@ -107,7 +140,7 @@
 .form-group select:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: var(--primary-green);
+  border-color: #2d5016;
   box-shadow: 0 0 0 3px rgba(45, 80, 22, 0.1);
 }
 
@@ -117,24 +150,50 @@
   margin-top: 10px;
 }
 
-.success-message {
-  background: #d4edda;
-  color: #155724;
-  padding: 12px 15px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  font-weight: 600;
-  text-align: center;
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-@media (min-width: 768px) {
+@media (max-width: 768px) {
   .contact-content {
-    grid-template-columns: 1fr 1fr;
-    gap: 30px;
+    grid-template-columns: 1fr;
+    gap: 40px;
+    padding: 60px 0;
   }
 
-  .contact-info,
-  .contact-form {
-    padding: 40px;
+  .contact-info h2,
+  .contact-form h2 {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .contact-info h2,
+  .contact-form h2 {
+    font-size: 20px;
+  }
+
+  .info-item {
+    gap: 15px;
+  }
+
+  .info-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    padding: 10px 12px;
+    font-size: 13px;
   }
 }

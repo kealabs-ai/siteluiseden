@@ -74,10 +74,10 @@ function Contact() {
             </div>
 
             <div className="social-links">
-              <a href="#" className="social-icon">📘</a>
-              <a href="#" className="social-icon">📷</a>
-              <a href="#" className="social-icon">💬</a>
-              <a href="#" className="social-icon">▶️</a>
+              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="social-icon" aria-label="Facebook">📘</a>
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="social-icon" aria-label="Instagram">📷</a>
+              <a href="https://wa.me/5511999999999" target="_blank" rel="noopener noreferrer" className="social-icon" aria-label="WhatsApp">💬</a>
+              <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="social-icon" aria-label="YouTube">▶️</a>
             </div>
           </div>
 
