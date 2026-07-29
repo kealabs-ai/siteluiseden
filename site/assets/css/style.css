@@ -347,6 +347,27 @@ body {
   font-weight: 600;
 }
 
+.logo-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.logo-container .logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 40px;
+  filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.15));
+  transition: all 0.3s ease;
+}
+
+.logo-container:hover .logo-img {
+  transform: scale(1.05);
+  filter: drop-shadow(0 15px 40px rgba(0, 0, 0, 0.25));
+}
+
 .sobre-badge {
   position: absolute;
   bottom: -20px;
