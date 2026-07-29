@@ -934,18 +934,34 @@
 }
 
 .kealabs-column-logo {
-  width: 124px !important;
-  height: 40px !important;
-  object-fit: contain;
-  filter: grayscale(100%) brightness(1);
-  opacity: 0.9;
-  transition: all 0.3s ease;
+  height: 40px;
+  margin-bottom: 12px;
+  opacity: 0.8;
+  transition: opacity 0.3s ease;
+  filter: brightness(0) invert(1);
 }
 
 .kealabs-column-logo:hover {
   opacity: 1;
-  filter: grayscale(100%) brightness(1.1);
-  transform: scale(1.05);
+}
+
+.kealabs-text-1 {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: rgb(156 163 175);
+  font-weight: 500;
+  margin: 0;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.kealabs-text-2 {
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: rgb(75 85 99);
+  font-weight: 400;
+  margin: 0;
+  text-align: left;
 }
 
 .kealabs-text-1 {

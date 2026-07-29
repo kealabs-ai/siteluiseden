@@ -452,7 +452,7 @@ function Home() {
             <div className="footer-section footer-kealabs-column">
               <div className="kealabs-logo-container">
                 <div className="kealabs-branding">
-                  <img src="/assets/images/kealabs_logo_strategic_white.png" alt="Kealabs" className="kealabs-column-logo" width="124" height="40" />
+                  <img src="/assets/images/kealabs_logo_strategic_white.png" alt="Kealabs" className="kealabs-column-logo h-10 mb-3 opacity-80 hover:opacity-100 transition-opacity brightness-0 invert" width="124" height="40" />
                   <p className="kealabs-text-1">Business Intelligence e Agentes de IA</p>
                   <p className="kealabs-text-2">Lab de Passos-MG</p>
                 </div>
