@@ -1,0 +1,267 @@
+.landscaping-budget {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.landscaping-budget h1 {
+  color: var(--primary-green);
+  font-family: 'Playfair Display', serif;
+  margin-bottom: 2rem;
+  font-size: 2.5rem;
+}
+
+.btn-new-project {
+  background: var(--primary-green);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 2rem;
+  transition: background 0.3s;
+}
+
+.btn-new-project:hover {
+  background: var(--light-green);
+}
+
+.form-section {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+.form-section h2 {
+  color: var(--primary-green);
+  margin: 0 0 1.5rem 0;
+  font-size: 1.3rem;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--primary-green);
+  font-weight: 600;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.3s;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--primary-green);
+}
+
+.btn-cancel {
+  background: #e0e0e0;
+  color: #333;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.3s;
+}
+
+.btn-cancel:hover {
+  background: #d0d0d0;
+}
+
+.projects-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.project-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.project-header {
+  background: var(--primary-green);
+  color: white;
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+}
+
+.project-header h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.2rem;
+}
+
+.client-name {
+  margin: 0;
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.status-badge {
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.status-badge.orçamento {
+  background: var(--accent-yellow);
+  color: var(--primary-green);
+}
+
+.project-items {
+  padding: 1.5rem;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+thead {
+  background: #f9f9f9;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+th {
+  padding: 0.75rem;
+  text-align: left;
+  font-weight: 600;
+  color: var(--primary-green);
+}
+
+td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.item-type {
+  display: inline-block;
+  background: #f0f0f0;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+}
+
+.project-summary {
+  background: #f9f9f9;
+  padding: 1.5rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  font-size: 0.95rem;
+}
+
+.summary-row span {
+  color: #666;
+}
+
+.summary-row strong {
+  color: var(--primary-green);
+  font-weight: 600;
+}
+
+.summary-row.highlight {
+  background: white;
+  padding: 0.75rem;
+  border-radius: 8px;
+  margin-top: 0.5rem;
+  border-left: 4px solid var(--accent-yellow);
+}
+
+.summary-row.highlight strong {
+  color: #155724;
+  font-size: 1.1rem;
+}
+
+.project-actions {
+  display: flex;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+.btn-send, .btn-edit {
+  flex: 1;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.btn-send {
+  background: var(--primary-green);
+  color: white;
+}
+
+.btn-send:hover {
+  background: var(--light-green);
+}
+
+.btn-edit {
+  background: #e0e0e0;
+  color: #333;
+}
+
+.btn-edit:hover {
+  background: #d0d0d0;
+}
+
+@media (max-width: 768px) {
+  .landscaping-budget {
+    padding: 1rem;
+  }
+
+  .landscaping-budget h1 {
+    font-size: 1.8rem;
+  }
+
+  .project-header {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .project-items {
+    overflow-x: auto;
+  }
+
+  table {
+    font-size: 0.8rem;
+  }
+
+  th, td {
+    padding: 0.5rem;
+  }
+
+  .project-actions {
+    flex-direction: column;
+  }
+}

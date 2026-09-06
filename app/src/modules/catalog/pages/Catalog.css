@@ -1,0 +1,197 @@
+.catalog {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.catalog h1 {
+  color: var(--primary-green);
+  font-family: 'Playfair Display', serif;
+  margin-bottom: 2rem;
+  font-size: 2.5rem;
+}
+
+.catalog-container {
+  display: grid;
+  grid-template-columns: 1fr 350px;
+  gap: 2rem;
+}
+
+.plants-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.plant-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.plant-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.plant-header {
+  background: var(--primary-green);
+  color: white;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+}
+
+.plant-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  flex: 1;
+}
+
+.health-badge {
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  margin-left: 0.5rem;
+}
+
+.plant-body {
+  padding: 1rem;
+}
+
+.price-info, .margin-info, .stock-info {
+  margin-bottom: 0.75rem;
+}
+
+.price-info p, .margin-info p, .stock-info p {
+  margin: 0.25rem 0;
+  font-size: 0.9rem;
+}
+
+.plant-footer {
+  padding: 0.75rem 1rem;
+  background: #f9f9f9;
+  border-top: 1px solid #f0f0f0;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.plant-details {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  position: sticky;
+  top: 2rem;
+  height: fit-content;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.plant-details h2 {
+  color: var(--primary-green);
+  margin: 0 0 1.5rem 0;
+  font-size: 1.3rem;
+  padding-top: 2rem;
+}
+
+.btn-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: #f0f0f0;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.3s;
+}
+
+.btn-close:hover {
+  background: #e0e0e0;
+}
+
+.details-section {
+  margin-bottom: 1.5rem;
+}
+
+.details-section h3 {
+  color: var(--primary-green);
+  font-size: 1rem;
+  margin: 0 0 1rem 0;
+  border-bottom: 2px solid var(--accent-yellow);
+  padding-bottom: 0.5rem;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 0.95rem;
+}
+
+.detail-row span {
+  color: #666;
+}
+
+.detail-row strong {
+  color: var(--primary-green);
+  font-weight: 600;
+}
+
+.btn-edit {
+  width: 100%;
+  background: var(--primary-green);
+  color: white;
+  border: none;
+  padding: 0.75rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.3s;
+  margin-top: 1rem;
+}
+
+.btn-edit:hover {
+  background: var(--light-green);
+}
+
+@media (max-width: 1024px) {
+  .catalog-container {
+    grid-template-columns: 1fr;
+  }
+
+  .plant-details {
+    position: static;
+    max-height: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .catalog {
+    padding: 1rem;
+  }
+
+  .catalog h1 {
+    font-size: 1.8rem;
+  }
+
+  .plants-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+
+  .plant-details {
+    margin-top: 2rem;
+  }
+}
