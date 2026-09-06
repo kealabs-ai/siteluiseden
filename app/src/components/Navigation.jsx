@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
 
 function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
@@ -22,8 +23,8 @@ function Navigation() {
   return (
     <nav className="fixed inset-x-0 top-0 z-50 border-b border-stone-200/80 bg-white/95 shadow-sm backdrop-blur-md">
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 sm:px-8">
-        <a
-          href="#"
+        <Link
+          to="/"
           className="flex items-center gap-3 transition-transform hover:scale-105"
           onClick={closeMenu}
         >
@@ -36,7 +37,7 @@ function Navigation() {
             <span className="text-base font-bold text-eden-primary">Luis Eden</span>
             <span className="text-xs font-medium text-eden-light">Paisagismo</span>
           </div>
-        </a>
+        </Link>
 
         <div className="hidden items-center gap-7 lg:flex">
           {navItems.map(item => (
@@ -48,14 +49,12 @@ function Navigation() {
               {item.label}
             </a>
           ))}
-          <a
-            href="/login"
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            to="/login"
             className="text-sm font-medium text-white bg-eden-primary px-4 py-2 rounded-lg hover:bg-eden-light transition-colors"
           >
             Área do Cliente
-          </a>
+          </Link>
         </div>
 
         <button
@@ -91,15 +90,13 @@ function Navigation() {
             {item.label}
           </a>
         ))}
-        <a
-          href="/login"
-          target="_blank"
-          rel="noopener noreferrer"
+        <Link
+          to="/login"
           onClick={closeMenu}
-          className="py-3 text-sm font-medium text-white bg-eden-primary px-4 rounded-lg hover:bg-eden-light transition-colors text-center mt-2"
+          className="py-3 text-sm font-medium text-white bg-eden-primary px-4 rounded-lg hover:bg-eden-light transition-colors text-center mt-2 block"
         >
           Área do Cliente
-        </a>
+        </Link>
       </div>
     </nav>
   )
