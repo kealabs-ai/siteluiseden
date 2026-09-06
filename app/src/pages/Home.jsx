@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
 
 function Home() {
   const [formData, setFormData] = useState({
@@ -72,6 +73,7 @@ function Home() {
           <p className="text-lg text-white/90 mb-8">Criamos ambientes únicos que unem beleza, harmonia e conexão com a natureza.</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a href="#projetos" className="btn-primary">Ver Projetos</a>
+            <Link to="/login" className="btn-outline">Área do Cliente</Link>
           </div>
         </div>
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white/70 animate-bounce">
