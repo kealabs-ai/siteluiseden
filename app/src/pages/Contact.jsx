@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import './Contact.css';
+import React, { useState } from 'react'
 
 function Contact() {
   const [formData, setFormData] = useState({
@@ -8,81 +7,83 @@ function Contact() {
     email: '',
     servico: '',
     mensagem: ''
-  });
+  })
 
-  const [submitted, setSubmitted] = useState(false);
+  const [submitted, setSubmitted] = useState(false)
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value } = e.target
     setFormData(prev => ({
       ...prev,
       [name]: value
-    }));
-  };
+    }))
+  }
 
   const handleSubmit = (e) => {
-    e.preventDefault();
+    e.preventDefault()
     if (formData.nome && formData.email && formData.mensagem) {
-      setSubmitted(true);
-      setFormData({ nome: '', telefone: '', email: '', servico: '', mensagem: '' });
-      setTimeout(() => setSubmitted(false), 3000);
+      setSubmitted(true)
+      setFormData({ nome: '', telefone: '', email: '', servico: '', mensagem: '' })
+      setTimeout(() => setSubmitted(false), 3000)
     }
-  };
+  }
 
   return (
-    <div className="contact-page">
-      <div className="page-header">
-        <h1>Entre em Contato</h1>
-        <p>Estamos prontos para criar o jardim dos seus sonhos</p>
+    <div className="min-h-screen bg-white pt-20">
+      <div className="bg-gradient-to-r from-eden-primary to-eden-light text-white py-16 px-5">
+        <div className="container text-center">
+          <h1 className="text-5xl font-bold mb-4">Entre em Contato</h1>
+          <p className="text-xl text-white/90">Estamos prontos para criar o jardim dos seus sonhos</p>
+        </div>
       </div>
 
-      <div className="container">
-        <div className="contact-content">
-          <div className="contact-info">
-            <h2>Informações de Contato</h2>
+      <div className="container py-20">
+        <div className="contato-grid">
+          <div>
+            <h2 className="text-3xl font-bold text-eden-primary mb-8">Informações de Contato</h2>
             
             <div className="info-item">
-              <div className="info-icon">📍</div>
+              <div className="info-icon"><i className="fa-solid fa-location-dot"></i></div>
               <div>
                 <strong>Endereço</strong>
-                <p>Rua das Flores, 123 - Jardim Verde<br />São Paulo, SP - CEP 01234-567</p>
+                <p className="text-stone-600">Rua das Flores, 123 - Jardim Verde<br />São Paulo, SP - CEP 01234-567</p>
               </div>
             </div>
 
             <div className="info-item">
-              <div className="info-icon">📱</div>
+              <div className="info-icon"><i className="fa-solid fa-phone"></i></div>
               <div>
                 <strong>Telefone / WhatsApp</strong>
-                <p><a href="tel:+5511999999999">(11) 99999-9999</a></p>
+                <p className="text-stone-600"><a href="tel:+5511999999999" className="text-eden-primary hover:underline">(11) 99999-9999</a></p>
               </div>
             </div>
 
             <div className="info-item">
-              <div className="info-icon">✉️</div>
+              <div className="info-icon"><i className="fa-solid fa-envelope"></i></div>
               <div>
                 <strong>E-mail</strong>
-                <p><a href="mailto:contato@luisedenpaisagismo.com.br">contato@luisedenpaisagismo.com.br</a></p>
+                <p className="text-stone-600"><a href="mailto:contato@luisedenpaisagismo.com.br" className="text-eden-primary hover:underline">contato@luisedenpaisagismo.com.br</a></p>
               </div>
             </div>
 
             <div className="info-item">
-              <div className="info-icon">🕐</div>
+              <div className="info-icon"><i className="fa-solid fa-clock"></i></div>
               <div>
                 <strong>Horário de Atendimento</strong>
-                <p>Seg - Sex: 8h às 18h<br />Sáb: 8h às 13h</p>
+                <p className="text-stone-600">Seg - Sex: 8h às 18h<br />Sáb: 8h às 13h</p>
               </div>
             </div>
 
-            <div className="social-links">
-              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="social-icon" aria-label="Facebook">📘</a>
-              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="social-icon" aria-label="Instagram">📷</a>
-              <a href="https://wa.me/5511999999999" target="_blank" rel="noopener noreferrer" className="social-icon" aria-label="WhatsApp">💬</a>
-              <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="social-icon" aria-label="YouTube">▶️</a>
+            <div className="flex gap-3 mt-8">
+              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="social-btn" aria-label="Facebook"><i className="fa-brands fa-facebook"></i></a>
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="social-btn" aria-label="Instagram"><i className="fa-brands fa-instagram"></i></a>
+              <a href="https://wa.me/5511999999999" target="_blank" rel="noopener noreferrer" className="social-btn" aria-label="WhatsApp"><i className="fa-brands fa-whatsapp"></i></a>
+              <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="social-btn" aria-label="YouTube"><i className="fa-brands fa-youtube"></i></a>
             </div>
           </div>
 
-          <form className="contact-form" onSubmit={handleSubmit}>
-            <h2>Envie uma Mensagem</h2>
+          <form className="contato-form" onSubmit={handleSubmit}>
+            <h2 className="text-3xl font-bold text-eden-primary mb-8">Envie uma Mensagem</h2>
             
             {submitted && <div className="success-message">✓ Mensagem enviada com sucesso!</div>}
 
@@ -156,14 +157,14 @@ function Contact() {
               ></textarea>
             </div>
 
-            <button type="submit" className="btn-primary btn-submit">
-              Enviar Mensagem
+            <button type="submit" className="btn-primary btn-full">
+              <i className="fa-solid fa-paper-plane mr-2"></i>Enviar Mensagem
             </button>
           </form>
         </div>
       </div>
     </div>
-  );
+  )
 }
 
-export default Contact;
+export default Contact

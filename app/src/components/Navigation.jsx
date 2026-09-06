@@ -1,51 +1,108 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import './Navigation.css';
+import React, { useState } from 'react'
 
 function Navigation() {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false)
+
+  const toggleMenu = () => {
+    setIsOpen(!isOpen)
+  }
+
+  const closeMenu = () => {
+    setIsOpen(false)
+  }
+
+  const navItems = [
+    { id: 'sobre', label: 'Empresa' },
+    { id: 'paisagismo', label: 'Nossos Serviços' },
+    { id: 'floricultura', label: 'Floricultura' },
+    { id: 'projetos', label: 'Projetos' },
+    { id: 'contato', label: 'Contato' },
+  ]
 
   return (
-    <nav className="navbar" id="navbar">
-      <div className="nav-container">
-        <Link to="/" className="logo">
-          <img src="/assets/logotipo-eden.png" alt="Luis Eden" className="logo-img" />
-          <div className="logo-text">
-            <span className="logo-name">Luis Eden</span>
-            <span className="logo-sub">Paisagismo</span>
+    <nav className="fixed inset-x-0 top-0 z-50 border-b border-stone-200/80 bg-white/95 shadow-sm backdrop-blur-md">
+      <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 sm:px-8">
+        <a
+          href="#"
+          className="flex items-center gap-3 transition-transform hover:scale-105"
+          onClick={closeMenu}
+        >
+          <img
+            src="/assets/logotipo-eden.png"
+            alt="Luis Eden"
+            className="h-12 w-auto object-contain"
+          />
+          <div className="flex flex-col leading-tight">
+            <span className="text-base font-bold text-eden-primary">Luis Eden</span>
+            <span className="text-xs font-medium text-eden-light">Paisagismo</span>
           </div>
-        </Link>
-        
-        <div className="hidden md:flex items-center gap-8">
-          <a href="#sobre" className="text-gray-700 font-medium hover:text-green-700 transition">Empresa</a>
-          <a href="#paisagismo" className="text-gray-700 font-medium hover:text-green-700 transition">Nossos Serviços</a>
-          <a href="#floricultura" className="text-gray-700 font-medium hover:text-green-700 transition">Floricultura</a>
-          <a href="#projetos" className="text-gray-700 font-medium hover:text-green-700 transition">Projetos</a>
-          <a href="#contato" className="text-gray-700 font-medium hover:text-green-700 transition">Contato</a>
+        </a>
+
+        <div className="hidden items-center gap-7 lg:flex">
+          {navItems.map(item => (
+            <a
+              key={item.id}
+              href={`#${item.id}`}
+              className="text-sm font-medium text-stone-700 transition-colors hover:text-eden-primary"
+            >
+              {item.label}
+            </a>
+          ))}
+          <a
+            href="/login"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm font-medium text-white bg-eden-primary px-4 py-2 rounded-lg hover:bg-eden-light transition-colors"
+          >
+            Área do Cliente
+          </a>
         </div>
 
-        <button 
-          className="md:hidden flex flex-col gap-1.5 cursor-pointer" 
-          id="hamburger" 
-          onClick={() => setIsOpen(!isOpen)}
-          aria-label="Menu"
+        <button
+          className="rounded-md p-2 text-eden-primary transition-colors hover:bg-stone-100 lg:hidden"
+          onClick={toggleMenu}
+          aria-label="Abrir menu"
+          aria-expanded={isOpen}
         >
-          <span className="w-6 h-0.5 bg-green-900 rounded transition-all"></span>
-          <span className="w-6 h-0.5 bg-green-900 rounded transition-all"></span>
-          <span className="w-6 h-0.5 bg-green-900 rounded transition-all"></span>
+          <svg
+            className="h-6 w-6"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
         </button>
       </div>
 
-      {/* Mobile Menu */}
-      <div className={`nav-links hidden md:hidden flex-col bg-white shadow-md ${isOpen ? 'active' : ''}`} id="navLinks">
-        <a href="#sobre" className="px-6 py-3 text-gray-700 hover:bg-gray-100 transition">Empresa</a>
-        <a href="#paisagismo" className="px-6 py-3 text-gray-700 hover:bg-gray-100 transition">Nossos Serviços</a>
-        <a href="#floricultura" className="px-6 py-3 text-gray-700 hover:bg-gray-100 transition">Floricultura</a>
-        <a href="#projetos" className="px-6 py-3 text-gray-700 hover:bg-gray-100 transition">Projetos</a>
-        <a href="#contato" className="px-6 py-3 text-gray-700 hover:bg-gray-100 transition">Contato</a>
+      <div
+        className={`border-t border-stone-200 bg-white px-5 py-2 lg:hidden ${
+          isOpen ? 'flex' : 'hidden'
+        } flex-col`}
+      >
+        {navItems.map(item => (
+          <a
+            key={item.id}
+            href={`#${item.id}`}
+            onClick={closeMenu}
+            className="border-b border-stone-100 py-3 text-sm font-medium text-stone-700 last:border-0 transition-colors hover:text-eden-primary hover:bg-stone-50"
+          >
+            {item.label}
+          </a>
+        ))}
+        <a
+          href="/login"
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={closeMenu}
+          className="py-3 text-sm font-medium text-white bg-eden-primary px-4 rounded-lg hover:bg-eden-light transition-colors text-center mt-2"
+        >
+          Área do Cliente
+        </a>
       </div>
     </nav>
-  );
+  )
 }
 
-export default Navigation;
+export default Navigation
