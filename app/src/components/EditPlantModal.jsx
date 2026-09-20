@@ -45,7 +45,7 @@ export function EditPlantModal({ isOpen, onClose, plantData = {} }) {
     }
 
     try {
-      await catalogApi.update({ id: plantData.id, nome: formData.name, categoria: formData.supplier, precoCents: Math.round(salePrice * 100), estoque: Number(formData.stock) })
+      await catalogApi.update({ id: plantData.id, nome: formData.name, categoria: formData.supplier, custoCents: Math.round(cost * 100), precoCents: Math.round(salePrice * 100), estoque: Number(formData.stock) })
       addToast(`Planta "${formData.name}" atualizada com sucesso!`, 'success')
       notifyDataChanged('catalogo')
     } catch (error) {

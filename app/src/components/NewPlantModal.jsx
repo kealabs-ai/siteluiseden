@@ -38,6 +38,7 @@ export function NewPlantModal({ isOpen, onClose }) {
       await catalogApi.create({
         nome: formData.name,
         categoria: formData.supplier,
+        custoCents: Math.round(cost * 100),
         precoCents: Math.round(salePrice * 100),
         estoque: Number(formData.initialStock)
       })
