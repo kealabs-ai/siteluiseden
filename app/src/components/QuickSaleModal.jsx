@@ -105,6 +105,11 @@ export function QuickSaleModal({ isOpen, onClose, flowers = [] }) {
         dataVenda: new Date(formData.saleDate).toISOString(),
         totalCents: Math.round(saleTotal * 100),
         status: 'concluida',
+        itens: saleItems.map(item => ({
+          plantaId: item.id,
+          quantidade: item.quantity,
+          precoCents: Math.round(item.price * 100)
+        })),
         observacoes: `Itens: ${saleItems.map(item => `${item.quantity}x ${item.name} (R$ ${item.price.toFixed(2)})`).join(', ')}; Desconto: ${discountPercent.toFixed(2)}%; Pagamento: ${formData.paymentMethod}`
       })
       addToast('Venda registrada com sucesso!', 'success')

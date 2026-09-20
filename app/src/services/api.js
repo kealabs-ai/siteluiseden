@@ -45,6 +45,7 @@ export const catalogApi = {
 export const salesApi = {
   list: () => api.get('/vendas'),
   create: (data) => api.post('/vendas', data),
+  cancel: (id, motivo) => api.post('/vendas/cancel', { id, motivo }),
   dashboard: () => api.get('/vendas/dashboard')
 }
 

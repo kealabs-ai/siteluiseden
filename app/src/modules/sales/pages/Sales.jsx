@@ -16,7 +16,7 @@ export default function Sales() {
         product: 'Venda registrada',
         date: sale.createdAt,
         amount: sale.totalCents / 100,
-        status: sale.status === 'concluida' ? 'completed' : 'pending',
+        status: sale.status === 'cancelada' ? 'cancelled' : sale.status === 'concluida' ? 'completed' : 'pending',
         payment: 'Não informado'
       })))
     } catch (error) {
@@ -33,15 +33,31 @@ export default function Sales() {
   const { openModal } = useModal()
 
   const getStatusColor = (status) => {
-    return status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+    if (status === 'completed') return 'bg-green-100 text-green-800'
+    if (status === 'cancelled') return 'bg-red-100 text-red-800'
+    return 'bg-yellow-100 text-yellow-800'
   }
 
   const getStatusLabel = (status) => {
-    return status === 'completed' ? 'Concluída' : 'Pendente'
+    if (status === 'completed') return 'Concluída'
+    if (status === 'cancelled') return 'Cancelada'
+    return 'Pendente'
   }
 
-  const totalSales = sales.reduce((sum, sale) => sum + sale.amount, 0)
+  const activeSales = sales.filter(sale => sale.status !== 'cancelled')
+  const totalSales = activeSales.reduce((sum, sale) => sum + sale.amount, 0)
   const completedSales = sales.filter(s => s.status === 'completed').length
+
+  const handleCancel = async (sale) => {
+    if (sale.status === 'cancelled' || !window.confirm('Deseja cancelar esta venda e devolver os itens ao estoque?')) return
+    try {
+      await salesApi.cancel(sale.id, 'Cancelamento solicitado na tela de vendas')
+      addToast('Venda cancelada e estoque restaurado.', 'success')
+      loadSales()
+    } catch (error) {
+      addToast(getApiError(error, 'Não foi possível cancelar a venda.'), 'error')
+    }
+  }
 
   return (
     <div className="min-h-screen bg-stone-50">
@@ -117,7 +133,7 @@ export default function Sales() {
                     <td className="px-6 py-4 text-sm text-stone-600">{sale.payment}</td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(sale.status)}`}>
-                        <i className={`fa-solid ${sale.status === 'completed' ? 'fa-check' : 'fa-clock'}`}></i>
+                        <i className={`fa-solid ${sale.status === 'completed' ? 'fa-check' : sale.status === 'cancelled' ? 'fa-ban' : 'fa-clock'}`}></i>
                         {getStatusLabel(sale.status)}
                       </span>
                     </td>
@@ -125,8 +141,13 @@ export default function Sales() {
                       <button onClick={() => openModal('viewSaleDetails', sale)} className="text-eden-primary hover:text-eden-light transition-colors mr-3">
                         <i className="fa-solid fa-eye"></i>
                       </button>
-                      <button className="text-red-600 hover:text-red-700 transition-colors">
-                        <i className="fa-solid fa-trash"></i>
+                      <button
+                        onClick={() => handleCancel(sale)}
+                        disabled={sale.status === 'cancelled'}
+                        className={`${sale.status === 'cancelled' ? 'text-stone-300 cursor-not-allowed' : 'text-red-600 hover:text-red-700'} transition-colors`}
+                        title={sale.status === 'cancelled' ? 'Venda já cancelada' : 'Cancelar venda'}
+                      >
+                        <i className="fa-solid fa-ban"></i>
                       </button>
                     </td>
                   </tr>
