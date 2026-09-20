@@ -1,15 +1,24 @@
 import React, { useEffect, useState } from 'react'
 import { useModal } from '../../../ModalContext'
-import { financeApi, getApiError } from '../../../services/api'
+import { financeApi, getApiError, salesApi } from '../../../services/api'
 import { useToast } from '../../../ToastContext'
 
 export default function CashFlow() {
   const [transactions, setTransactions] = useState([])
+  const [sales, setSales] = useState([])
   const { addToast } = useToast()
 
   const loadTransactions = async () => {
     try {
-      const { data } = await financeApi.list()
+      const [{ data }, { data: salesData }] = await Promise.all([financeApi.list(), salesApi.list()])
+      setSales(salesData.filter(sale => sale.status !== 'cancelada').map(sale => ({
+        id: `sale-${sale.id}`,
+        description: `Venda - ${sale.clienteNome || 'Consumidor final'}`,
+        type: 'entrada',
+        amount: sale.totalCents / 100,
+        date: sale.dataVenda || sale.createdAt,
+        category: 'Vendas'
+      })))
       setTransactions(data.map(transaction => ({
         ...transaction,
         description: transaction.descricao,
@@ -29,7 +38,7 @@ export default function CashFlow() {
   }, [])
 
   const { openModal } = useModal()
-  const totalEntradas = transactions.filter(t => t.type === 'entrada').reduce((sum, t) => sum + t.amount, 0)
+  const totalEntradas = [...transactions, ...sales].filter(t => t.type === 'entrada').reduce((sum, t) => sum + t.amount, 0)
   const totalSaidas = transactions.filter(t => t.type === 'saida').reduce((sum, t) => sum + t.amount, 0)
   const saldo = totalEntradas - totalSaidas
 

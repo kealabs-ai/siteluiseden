@@ -12,14 +12,31 @@ export default function Dashboard() {
   const [orders, setOrders] = useState([])
   const { addToast } = useToast()
 
+  const isCurrentMonth = (dateValue) => {
+    const date = new Date(dateValue)
+    const now = new Date()
+    return date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth()
+  }
+
   const loadDashboard = async () => {
     try {
-      const [{ data: finance }, { data: sales }, { data: salesDashboard }, { data: catalog }] = await Promise.all([
-        financeApi.dashboard(), salesApi.list(), salesApi.dashboard(), catalogApi.list()
+      const [{ data: finance }, { data: sales }, { data: catalog }] = await Promise.all([
+        financeApi.dashboard(), salesApi.list(), catalogApi.list()
       ])
-      const revenue = salesDashboard.totalCents / 100
+      const monthlySales = sales.filter(sale => sale.status !== 'cancelada' && isCurrentMonth(sale.dataVenda || sale.createdAt))
+      const revenueCents = monthlySales.reduce((total, sale) => total + sale.totalCents, 0)
+      const marginBase = monthlySales.reduce((total, sale) => total + (sale.itens || []).reduce((itemsTotal, item) => {
+        if (!item.custoCents || item.custoCents <= 0) return itemsTotal
+        return itemsTotal + item.precoCents * item.quantidade
+      }, 0), 0)
+      const costCents = monthlySales.reduce((total, sale) => total + (sale.itens || []).reduce((itemsTotal, item) => {
+        if (!item.custoCents || item.custoCents <= 0) return itemsTotal
+        return itemsTotal + item.custoCents * item.quantidade
+      }, 0), 0)
+      const revenue = revenueCents / 100
+      const margin = marginBase > 0 ? ((marginBase - costCents) / marginBase) * 100 : 0
       const expenses = finance.totalSaidas / 100
-      setKpis({ monthlyRevenue: revenue, netProfit: revenue - expenses, avgMargin: revenue ? ((revenue - expenses) / revenue) * 100 : 0, activeOrders: sales.filter(sale => sale.status !== 'concluida' && sale.status !== 'cancelada').length })
+      setKpis({ monthlyRevenue: revenue, netProfit: revenue - expenses, avgMargin: margin, activeOrders: sales.filter(sale => sale.status !== 'concluida' && sale.status !== 'cancelada').length })
       setOrders(sales.map(sale => ({ id: sale.id, client: sale.clienteNome || 'Consumidor final', items: 'Venda registrada', date: sale.createdAt, status: sale.status === 'cancelada' ? 'cancelled' : sale.status === 'concluida' ? 'completed' : 'pending', total: sale.totalCents / 100 })))
       setFlowers(catalog.map(plant => ({ id: plant.id, name: plant.nome, quantity: plant.estoque, minLevel: 1, price: plant.precoCents / 100, status: plant.estoque < 1 ? 'critical' : 'ok' })))
     } catch (error) {
@@ -112,7 +129,7 @@ export default function Dashboard() {
                   <i className="fa-solid fa-money-bill-wave text-eden-accent text-2xl"></i>
                 </div>
                 <p className="text-3xl font-bold text-eden-primary">R$ {kpis.monthlyRevenue.toFixed(2)}</p>
-                <p className="text-xs text-green-600 mt-2">↑ 12% vs mês anterior</p>
+                <p className="text-xs text-stone-500 mt-2">Vendas do mês atual</p>
               </div>
 
               <div className="bg-white rounded-xl p-6 border border-stone-200 hover:shadow-lg transition-shadow">
@@ -121,7 +138,7 @@ export default function Dashboard() {
                   <i className="fa-solid fa-chart-pie text-eden-light text-2xl"></i>
                 </div>
                 <p className="text-3xl font-bold text-eden-primary">R$ {kpis.netProfit.toFixed(2)}</p>
-                <p className="text-xs text-green-600 mt-2">↑ 8% vs mês anterior</p>
+                <p className="text-xs text-stone-500 mt-2">Faturamento menos despesas</p>
               </div>
 
               <div className="bg-white rounded-xl p-6 border border-stone-200 hover:shadow-lg transition-shadow">
@@ -130,7 +147,7 @@ export default function Dashboard() {
                   <i className="fa-solid fa-percent text-blue-500 text-2xl"></i>
                 </div>
                 <p className="text-3xl font-bold text-eden-primary">{kpis.avgMargin.toFixed(1)}%</p>
-                <p className="text-xs text-stone-500 mt-2">Margem de lucro</p>
+                <p className="text-xs text-stone-500 mt-2">Custo versus preço de venda</p>
               </div>
 
               <div className="bg-white rounded-xl p-6 border border-stone-200 hover:shadow-lg transition-shadow">
