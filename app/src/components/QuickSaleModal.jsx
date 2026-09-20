@@ -1,9 +1,12 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useToast } from '../ToastContext'
-import { getApiError, notifyDataChanged, salesApi } from '../services/api'
+import { catalogApi, getApiError, notifyDataChanged, salesApi } from '../services/api'
 
 export function QuickSaleModal({ isOpen, onClose, flowers = [] }) {
   const { addToast } = useToast()
+  const [catalogFlowers, setCatalogFlowers] = useState([])
+  const [catalogLoading, setCatalogLoading] = useState(false)
+  const [catalogError, setCatalogError] = useState('')
   const [formData, setFormData] = useState({
     client: '',
     flower: '',
@@ -11,7 +14,33 @@ export function QuickSaleModal({ isOpen, onClose, flowers = [] }) {
     paymentMethod: 'pix'
   })
 
-  const selectedFlower = flowers.find(f => f.id === parseInt(formData.flower))
+  useEffect(() => {
+    if (!isOpen) return
+
+    const loadCatalog = async () => {
+      setCatalogLoading(true)
+      setCatalogError('')
+      try {
+        const { data } = await catalogApi.list()
+        setCatalogFlowers(data.map(plant => ({
+          id: plant.id,
+          name: plant.nome,
+          price: plant.precoCents / 100,
+          stock: plant.estoque
+        })))
+      } catch (error) {
+        setCatalogFlowers([])
+        setCatalogError(getApiError(error, 'Não foi possível carregar as plantas.'))
+      } finally {
+        setCatalogLoading(false)
+      }
+    }
+
+    loadCatalog()
+  }, [isOpen])
+
+  const availableFlowers = catalogFlowers.length > 0 ? catalogFlowers : flowers
+  const selectedFlower = availableFlowers.find(f => String(f.id) === String(formData.flower))
   
   const costTotal = selectedFlower ? selectedFlower.price * formData.quantity : 0
   const saleTotal = selectedFlower ? selectedFlower.price * 1.5 * formData.quantity : 0
@@ -99,15 +128,19 @@ export function QuickSaleModal({ isOpen, onClose, flowers = [] }) {
                   name="flower"
                   value={formData.flower}
                   onChange={handleChange}
+                  disabled={catalogLoading}
                   className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
                 >
-                  <option value="">-- Escolha uma planta --</option>
-                  {flowers.map(flower => (
+                  <option value="">
+                    {catalogLoading ? 'Carregando plantas...' : '-- Escolha uma planta --'}
+                  </option>
+                  {availableFlowers.map(flower => (
                     <option key={flower.id} value={flower.id}>
-                      {flower.name} - R$ {flower.price.toFixed(2)}
+                      {flower.name} - R$ {flower.price.toFixed(2)}{flower.stock !== undefined ? ` (${flower.stock} em estoque)` : ''}
                     </option>
                   ))}
                 </select>
+                {catalogError && <p className="mt-2 text-sm text-red-600">{catalogError}</p>}
               </div>
 
               <div>
