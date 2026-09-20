@@ -1,17 +1,53 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useToast } from '../ToastContext'
-import { getApiError, notifyDataChanged, salesApi } from '../services/api'
+import { catalogApi, getApiError, notifyDataChanged, salesApi } from '../services/api'
+
+const getLocalDateTime = () => {
+  const now = new Date()
+  const offset = now.getTimezoneOffset() * 60000
+  return new Date(now.getTime() - offset).toISOString().slice(0, 16)
+}
 
 export function QuickSaleModal({ isOpen, onClose, flowers = [] }) {
   const { addToast } = useToast()
+  const [catalogFlowers, setCatalogFlowers] = useState([])
+  const [catalogLoading, setCatalogLoading] = useState(false)
+  const [catalogError, setCatalogError] = useState('')
   const [formData, setFormData] = useState({
     client: '',
     flower: '',
     quantity: 1,
-    paymentMethod: 'pix'
+    paymentMethod: 'pix',
+    saleDate: getLocalDateTime()
   })
 
-  const selectedFlower = flowers.find(f => f.id === parseInt(formData.flower))
+  useEffect(() => {
+    if (!isOpen) return
+
+    const loadCatalog = async () => {
+      setCatalogLoading(true)
+      setCatalogError('')
+      try {
+        const { data } = await catalogApi.list()
+        setCatalogFlowers(data.map(plant => ({
+          id: plant.id,
+          name: plant.nome,
+          price: plant.precoCents / 100,
+          stock: plant.estoque
+        })))
+      } catch (error) {
+        setCatalogFlowers([])
+        setCatalogError(getApiError(error, 'Não foi possível carregar as plantas.'))
+      } finally {
+        setCatalogLoading(false)
+      }
+    }
+
+    loadCatalog()
+  }, [isOpen])
+
+  const availableFlowers = catalogFlowers.length > 0 ? catalogFlowers : flowers
+  const selectedFlower = availableFlowers.find(f => String(f.id) === String(formData.flower))
   
   const costTotal = selectedFlower ? selectedFlower.price * formData.quantity : 0
   const saleTotal = selectedFlower ? selectedFlower.price * 1.5 * formData.quantity : 0
@@ -29,7 +65,7 @@ export function QuickSaleModal({ isOpen, onClose, flowers = [] }) {
   const handleSubmit = async (e) => {
     e.preventDefault()
     
-    if (!formData.client || !formData.flower || formData.quantity < 1) {
+    if (!formData.client || !formData.flower || !formData.saleDate || formData.quantity < 1) {
       addToast('Preencha todos os campos', 'error')
       return
     }
@@ -37,6 +73,7 @@ export function QuickSaleModal({ isOpen, onClose, flowers = [] }) {
     try {
       await salesApi.create({
         clienteNome: formData.client,
+        dataVenda: new Date(formData.saleDate).toISOString(),
         totalCents: Math.round(saleTotal * 100),
         status: 'concluida',
         observacoes: `Produto: ${selectedFlower.name}; Quantidade: ${formData.quantity}; Pagamento: ${formData.paymentMethod}`
@@ -52,7 +89,8 @@ export function QuickSaleModal({ isOpen, onClose, flowers = [] }) {
       client: '',
       flower: '',
       quantity: 1,
-      paymentMethod: 'pix'
+      paymentMethod: 'pix',
+      saleDate: getLocalDateTime()
     })
     onClose()
   }
@@ -99,15 +137,19 @@ export function QuickSaleModal({ isOpen, onClose, flowers = [] }) {
                   name="flower"
                   value={formData.flower}
                   onChange={handleChange}
+                  disabled={catalogLoading}
                   className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
                 >
-                  <option value="">-- Escolha uma planta --</option>
-                  {flowers.map(flower => (
+                  <option value="">
+                    {catalogLoading ? 'Carregando plantas...' : '-- Escolha uma planta --'}
+                  </option>
+                  {availableFlowers.map(flower => (
                     <option key={flower.id} value={flower.id}>
-                      {flower.name} - R$ {flower.price.toFixed(2)}
+                      {flower.name} - R$ {flower.price.toFixed(2)}{flower.stock !== undefined ? ` (${flower.stock} em estoque)` : ''}
                     </option>
                   ))}
                 </select>
+                {catalogError && <p className="mt-2 text-sm text-red-600">{catalogError}</p>}
               </div>
 
               <div>
@@ -120,6 +162,20 @@ export function QuickSaleModal({ isOpen, onClose, flowers = [] }) {
                   value={formData.quantity}
                   onChange={handleChange}
                   min="1"
+                  className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="saleDate" className="block text-sm font-semibold text-stone-700 mb-2">
+                  Data da Venda
+                </label>
+                <input
+                  type="datetime-local"
+                  id="saleDate"
+                  name="saleDate"
+                  value={formData.saleDate}
+                  onChange={handleChange}
                   className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
                 />
               </div>
