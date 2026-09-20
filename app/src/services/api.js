@@ -16,14 +16,7 @@ api.interceptors.request.use((config) => {
 
 api.interceptors.response.use(
   response => response,
-  error => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('accessToken')
-      localStorage.removeItem('user')
-      localStorage.removeItem('isLoggedIn')
-    }
-    return Promise.reject(error)
-  }
+  error => Promise.reject(error)
 )
 
 export const getApiError = (error, fallback = 'Não foi possível concluir a operação.') => {

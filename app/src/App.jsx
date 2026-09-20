@@ -37,7 +37,7 @@ function AppContent({ isLoggedIn, setIsLoggedIn }) {
 
   return (
     <div className="app">
-      {isAppPage ? <AppNavigation /> : !isLoginPage && <Navigation />}
+      {isAppPage ? <AppNavigation onLogout={() => setIsLoggedIn(false)} /> : !isLoginPage && <Navigation />}
       {isAppPage && <AppSidebar />}
       <main className={`main-content ${isAppPage ? 'pt-16 pl-72' : ''}`}>
         <Routes>
@@ -120,15 +120,10 @@ function AppContent({ isLoggedIn, setIsLoggedIn }) {
 }
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(() => (
+    localStorage.getItem('isLoggedIn') === 'true' && Boolean(localStorage.getItem('accessToken'))
+  ))
 
-  // Verificar se há sessão salva ao carregar
-  useEffect(() => {
-    const savedLogin = localStorage.getItem('isLoggedIn')
-    if (savedLogin === 'true') {
-      setIsLoggedIn(true)
-    }
-  }, [])
 
   return (
     <ToastProvider>

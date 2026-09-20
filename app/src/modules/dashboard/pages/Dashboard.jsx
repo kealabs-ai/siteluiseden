@@ -14,13 +14,13 @@ export default function Dashboard() {
 
   const loadDashboard = async () => {
     try {
-      const [{ data: finance }, { data: sales }, { data: catalog }] = await Promise.all([
-        financeApi.dashboard(), salesApi.list(), catalogApi.list()
+      const [{ data: finance }, { data: sales }, { data: salesDashboard }, { data: catalog }] = await Promise.all([
+        financeApi.dashboard(), salesApi.list(), salesApi.dashboard(), catalogApi.list()
       ])
-      const revenue = finance.totalEntradas / 100
+      const revenue = salesDashboard.totalCents / 100
       const expenses = finance.totalSaidas / 100
-      setKpis({ monthlyRevenue: revenue, netProfit: revenue - expenses, avgMargin: revenue ? ((revenue - expenses) / revenue) * 100 : 0, activeOrders: sales.filter(sale => sale.status !== 'concluida').length })
-      setOrders(sales.map(sale => ({ id: sale.id, client: sale.clienteNome || 'Consumidor final', items: 'Venda registrada', date: sale.createdAt, status: sale.status === 'concluida' ? 'completed' : 'pending', total: sale.totalCents / 100 })))
+      setKpis({ monthlyRevenue: revenue, netProfit: revenue - expenses, avgMargin: revenue ? ((revenue - expenses) / revenue) * 100 : 0, activeOrders: sales.filter(sale => sale.status !== 'concluida' && sale.status !== 'cancelada').length })
+      setOrders(sales.map(sale => ({ id: sale.id, client: sale.clienteNome || 'Consumidor final', items: 'Venda registrada', date: sale.createdAt, status: sale.status === 'cancelada' ? 'cancelled' : sale.status === 'concluida' ? 'completed' : 'pending', total: sale.totalCents / 100 })))
       setFlowers(catalog.map(plant => ({ id: plant.id, name: plant.nome, quantity: plant.estoque, minLevel: 1, price: plant.precoCents / 100, status: plant.estoque < 1 ? 'critical' : 'ok' })))
     } catch (error) {
       addToast(getApiError(error, 'Não foi possível carregar o dashboard.'), 'error')
