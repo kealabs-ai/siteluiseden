@@ -1,30 +1,37 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useModal } from '../../../ModalContext'
+import { catalogApi, financeApi, getApiError, salesApi } from '../../../services/api'
+import { useToast } from '../../../ToastContext'
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('overview')
   const { openModal } = useModal()
 
-  const [kpis] = useState({
-    monthlyRevenue: 15420.50,
-    netProfit: 8230.75,
-    avgMargin: 42.5,
-    activeOrders: 12
-  })
+  const [kpis, setKpis] = useState({ monthlyRevenue: 0, netProfit: 0, avgMargin: 0, activeOrders: 0 })
+  const [flowers, setFlowers] = useState([])
+  const [orders, setOrders] = useState([])
+  const { addToast } = useToast()
 
-  const [flowers] = useState([
-    { id: 1, name: 'Rosa Vermelha', quantity: 3, minLevel: 10, price: 45.00, status: 'critical' },
-    { id: 2, name: 'Orquídea Branca', quantity: 2, minLevel: 5, price: 65.00, status: 'critical' },
-    { id: 3, name: 'Samambaia', quantity: 1, minLevel: 8, price: 25.00, status: 'critical' },
-    { id: 4, name: 'Girassol', quantity: 15, minLevel: 10, price: 35.00, status: 'ok' },
-    { id: 5, name: 'Tulipa', quantity: 8, minLevel: 5, price: 40.00, status: 'ok' }
-  ])
+  const loadDashboard = async () => {
+    try {
+      const [{ data: finance }, { data: sales }, { data: catalog }] = await Promise.all([
+        financeApi.dashboard(), salesApi.list(), catalogApi.list()
+      ])
+      const revenue = finance.totalEntradas / 100
+      const expenses = finance.totalSaidas / 100
+      setKpis({ monthlyRevenue: revenue, netProfit: revenue - expenses, avgMargin: revenue ? ((revenue - expenses) / revenue) * 100 : 0, activeOrders: sales.filter(sale => sale.status !== 'concluida').length })
+      setOrders(sales.map(sale => ({ id: sale.id, client: sale.clienteNome || 'Consumidor final', items: 'Venda registrada', date: sale.createdAt, status: sale.status === 'concluida' ? 'completed' : 'pending', total: sale.totalCents / 100 })))
+      setFlowers(catalog.map(plant => ({ id: plant.id, name: plant.nome, quantity: plant.estoque, minLevel: 1, price: plant.precoCents / 100, status: plant.estoque < 1 ? 'critical' : 'ok' })))
+    } catch (error) {
+      addToast(getApiError(error, 'Não foi possível carregar o dashboard.'), 'error')
+    }
+  }
 
-  const [orders] = useState([
-    { id: 1, client: 'Ana Maria S.', items: 'Arranjo Floral Premium', date: '2025-01-15', status: 'pending', total: 250.00 },
-    { id: 2, client: 'Roberto C.', items: 'Buquê Especial', date: '2025-01-14', status: 'completed', total: 180.00 },
-    { id: 3, client: 'Juliana & Lucas', items: 'Decoração Casamento', date: '2025-01-13', status: 'completed', total: 1500.00 }
-  ])
+  useEffect(() => {
+    loadDashboard()
+    window.addEventListener('eden:data-changed', loadDashboard)
+    return () => window.removeEventListener('eden:data-changed', loadDashboard)
+  }, [])
 
   const getStatusColor = (status) => {
     switch(status) {

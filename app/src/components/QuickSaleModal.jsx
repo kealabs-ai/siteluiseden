@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useToast } from '../ToastContext'
+import { getApiError, notifyDataChanged, salesApi } from '../services/api'
 
 export function QuickSaleModal({ isOpen, onClose, flowers = [] }) {
   const { addToast } = useToast()
@@ -25,7 +26,7 @@ export function QuickSaleModal({ isOpen, onClose, flowers = [] }) {
     }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     
     if (!formData.client || !formData.flower || formData.quantity < 1) {
@@ -33,7 +34,19 @@ export function QuickSaleModal({ isOpen, onClose, flowers = [] }) {
       return
     }
 
-    addToast(`Venda de ${formData.quantity}x ${selectedFlower.name} registrada! Lucro: R$ ${profit.toFixed(2)}`, 'success')
+    try {
+      await salesApi.create({
+        clienteNome: formData.client,
+        totalCents: Math.round(saleTotal * 100),
+        status: 'concluida',
+        observacoes: `Produto: ${selectedFlower.name}; Quantidade: ${formData.quantity}; Pagamento: ${formData.paymentMethod}`
+      })
+      addToast(`Venda de ${formData.quantity}x ${selectedFlower.name} registrada! Lucro: R$ ${profit.toFixed(2)}`, 'success')
+      notifyDataChanged('vendas')
+    } catch (error) {
+      addToast(getApiError(error, 'Não foi possível registrar a venda.'), 'error')
+      return
+    }
     
     setFormData({
       client: '',

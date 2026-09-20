@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useToast } from '../ToastContext'
+import { catalogApi, getApiError, notifyDataChanged } from '../services/api'
 
 export function NewPlantModal({ isOpen, onClose }) {
   const { addToast } = useToast()
@@ -21,7 +22,7 @@ export function NewPlantModal({ isOpen, onClose }) {
     }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     
     if (!formData.name || !formData.supplier || !formData.cost || !formData.salePrice || !formData.initialStock) {
@@ -33,7 +34,19 @@ export function NewPlantModal({ isOpen, onClose }) {
     const salePrice = parseFloat(formData.salePrice)
     const markup = ((salePrice - cost) / cost * 100).toFixed(1)
 
-    addToast(`Planta "${formData.name}" cadastrada com sucesso! Markup: ${markup}%`, 'success')
+    try {
+      await catalogApi.create({
+        nome: formData.name,
+        categoria: formData.supplier,
+        precoCents: Math.round(salePrice * 100),
+        estoque: Number(formData.initialStock)
+      })
+      addToast(`Planta "${formData.name}" cadastrada com sucesso! Markup: ${markup}%`, 'success')
+      notifyDataChanged('catalogo')
+    } catch (error) {
+      addToast(getApiError(error, 'Não foi possível cadastrar a planta.'), 'error')
+      return
+    }
     
     setFormData({
       name: '',

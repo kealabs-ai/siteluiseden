@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { authApi, getApiError } from '../../../services/api'
 
 export default function Login({ setIsLoggedIn }) {
   const navigate = useNavigate()
@@ -14,28 +15,24 @@ export default function Login({ setIsLoggedIn }) {
     setError('')
     setLoading(true)
 
-    setTimeout(() => {
-      if (email && password) {
-        const validUsers = [
-          { email: 'admin@luiseden.com', password: '123456' },
-          { email: 'user@luiseden.com', password: '123456' }
-        ]
-
-        const user = validUsers.find(u => u.email === email && u.password === password)
-
-        if (user) {
-          localStorage.setItem('user', JSON.stringify({ email, name: email.split('@')[0] }))
-          localStorage.setItem('isLoggedIn', 'true')
-          setIsLoggedIn(true)
-          navigate('/dashboard')
-        } else {
-          setError('Email ou senha inválidos')
-        }
-      } else {
-        setError('Preencha todos os campos')
-      }
+    if (!email || !password) {
+      setError('Preencha todos os campos')
       setLoading(false)
-    }, 500)
+      return
+    }
+
+    try {
+      const { data } = await authApi.login(email, password)
+      localStorage.setItem('accessToken', data.accessToken)
+      localStorage.setItem('user', JSON.stringify(data))
+      localStorage.setItem('isLoggedIn', 'true')
+      setIsLoggedIn(true)
+      navigate('/dashboard')
+    } catch (requestError) {
+      setError(getApiError(requestError, 'Email ou senha inválidos'))
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (

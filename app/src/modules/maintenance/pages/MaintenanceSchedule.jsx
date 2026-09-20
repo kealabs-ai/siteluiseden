@@ -1,14 +1,32 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useModal } from '../../../ModalContext'
+import { getApiError, maintenanceApi } from '../../../services/api'
+import { useToast } from '../../../ToastContext'
 
 export default function MaintenanceSchedule() {
-  const [schedules] = useState([
-    { id: 1, client: 'Condomínio Verde', service: 'Poda de Plantas', date: '2025-01-20', status: 'scheduled', priority: 'normal' },
-    { id: 2, client: 'Empresa Tech', service: 'Irrigação Automática', date: '2025-01-18', status: 'completed', priority: 'high' },
-    { id: 3, client: 'Casa Moderna', service: 'Adubação', date: '2025-01-22', status: 'scheduled', priority: 'normal' },
-    { id: 4, client: 'Restaurante Flores', service: 'Limpeza de Folhas', date: '2025-01-17', status: 'in_progress', priority: 'high' },
-    { id: 5, client: 'Casamento Silva', service: 'Manutenção Pós-Evento', date: '2025-01-16', status: 'completed', priority: 'normal' }
-  ])
+  const [schedules, setSchedules] = useState([])
+  const { addToast } = useToast()
+
+  const loadSchedules = async () => {
+    try {
+      const { data } = await maintenanceApi.list()
+      setSchedules(data.map(schedule => ({
+        ...schedule,
+        client: schedule.titulo,
+        service: schedule.descricao || 'Manutenção',
+        date: schedule.dataAgendada,
+        status: schedule.status === 'agendada' ? 'scheduled' : schedule.status
+      })))
+    } catch (error) {
+      addToast(getApiError(error, 'Não foi possível carregar as manutenções.'), 'error')
+    }
+  }
+
+  useEffect(() => {
+    loadSchedules()
+    window.addEventListener('eden:data-changed', loadSchedules)
+    return () => window.removeEventListener('eden:data-changed', loadSchedules)
+  }, [])
 
   const { openModal } = useModal()
 

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { useToast } from '../ToastContext'
+import { getApiError, maintenanceApi, notifyDataChanged } from '../services/api'
 
 export function EditMaintenanceModal({ isOpen, onClose, maintenanceData = {} }) {
-  const { showToast } = useToast()
+  const { addToast } = useToast()
   const [formData, setFormData] = useState({
     client: '',
     service: '',
@@ -35,15 +36,22 @@ export function EditMaintenanceModal({ isOpen, onClose, maintenanceData = {} }) 
     }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     
     if (!formData.client || !formData.service || !formData.date) {
-      showToast('Preencha todos os campos obrigatórios', 'error')
+      addToast('Preencha todos os campos obrigatórios', 'error')
       return
     }
 
-    showToast(`Manutenção para ${formData.client} atualizada com sucesso!`, 'success')
+    try {
+      await maintenanceApi.update({ id: maintenanceData.id, titulo: formData.client, descricao: formData.service, dataAgendada: formData.date, status: formData.status === 'scheduled' ? 'agendada' : formData.status })
+      addToast(`Manutenção para ${formData.client} atualizada com sucesso!`, 'success')
+      notifyDataChanged('manutencao')
+    } catch (error) {
+      addToast(getApiError(error, 'Não foi possível atualizar a manutenção.'), 'error')
+      return
+    }
     onClose()
   }
 

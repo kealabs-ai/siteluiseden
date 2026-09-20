@@ -1,15 +1,36 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useModal } from '../../../ModalContext'
+import { getApiError, supplierApi } from '../../../services/api'
+import { useToast } from '../../../ToastContext'
 
 export default function Supplier() {
   const [activeTab, setActiveTab] = useState('suppliers')
   const { openModal } = useModal()
 
-  const [suppliers] = useState([
-    { id: 1, name: 'Flores Brasil', contact: 'João Silva', email: 'joao@floresbrasil.com', phone: '(11) 98765-4321', status: 'active', lastOrder: '2025-01-15' },
-    { id: 2, name: 'Plantas Premium', contact: 'Maria Santos', email: 'maria@plantaspremium.com', phone: '(21) 99876-5432', status: 'active', lastOrder: '2025-01-10' },
-    { id: 3, name: 'Importações Verdes', contact: 'Carlos Costa', email: 'carlos@importacoes.com', phone: '(31) 97654-3210', status: 'inactive', lastOrder: '2024-12-20' }
-  ])
+  const [suppliers, setSuppliers] = useState([])
+  const { addToast } = useToast()
+
+  const loadSuppliers = async () => {
+    try {
+      const { data } = await supplierApi.list()
+      setSuppliers(data.map(supplier => ({
+        ...supplier,
+        name: supplier.nome,
+        contact: supplier.nome,
+        phone: supplier.telefone || '-',
+        status: supplier.ativo ? 'active' : 'inactive',
+        lastOrder: supplier.createdAt
+      })))
+    } catch (error) {
+      addToast(getApiError(error, 'Não foi possível carregar os fornecedores.'), 'error')
+    }
+  }
+
+  useEffect(() => {
+    loadSuppliers()
+    window.addEventListener('eden:data-changed', loadSuppliers)
+    return () => window.removeEventListener('eden:data-changed', loadSuppliers)
+  }, [])
 
   const [quotations] = useState([
     { id: 1, supplier: 'Flores Brasil', product: 'Rosa Vermelha', quantity: 100, costPrice: 25.00, salePrice: 45.00, margin: 44.4, date: '2025-01-15', status: 'active' },
@@ -115,7 +136,7 @@ export default function Supplier() {
                         <button onClick={() => openModal('editSupplier', supplier)} className="text-eden-primary hover:text-eden-light transition-colors mr-3">
                           <i className="fa-solid fa-edit"></i>
                         </button>
-                        <button className="text-red-600 hover:text-red-700 transition-colors">
+                        <button onClick={async () => { await supplierApi.remove(supplier.id); loadSuppliers() }} className="text-red-600 hover:text-red-700 transition-colors">
                           <i className="fa-solid fa-trash"></i>
                         </button>
                       </td>
