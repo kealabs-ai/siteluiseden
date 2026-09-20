@@ -46,7 +46,7 @@ export function QuickSaleModal({ isOpen, onClose, flowers = [] }) {
     loadCatalog()
   }, [isOpen])
 
-  const availableFlowers = catalogFlowers.length > 0 ? catalogFlowers : flowers
+  const availableFlowers = catalogFlowers
   const selectedFlower = availableFlowers.find(f => String(f.id) === String(formData.flower))
   
   const costTotal = selectedFlower ? selectedFlower.price * formData.quantity : 0
@@ -141,7 +141,11 @@ export function QuickSaleModal({ isOpen, onClose, flowers = [] }) {
                   className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
                 >
                   <option value="">
-                    {catalogLoading ? 'Carregando plantas...' : '-- Escolha uma planta --'}
+                    {catalogLoading
+                      ? 'Carregando plantas...'
+                      : availableFlowers.length === 0
+                        ? 'Nenhuma planta disponível'
+                        : '-- Escolha uma planta --'}
                   </option>
                   {availableFlowers.map(flower => (
                     <option key={flower.id} value={flower.id}>
