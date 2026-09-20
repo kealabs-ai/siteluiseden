@@ -148,6 +148,7 @@ export default function Sales() {
                         title={sale.status === 'cancelled' ? 'Venda já cancelada' : 'Cancelar venda'}
                       >
                         <i className="fa-solid fa-ban"></i>
+                        <span className="sr-only">{sale.status === 'cancelled' ? 'Venda já cancelada' : 'Cancelar venda'}</span>
                       </button>
                     </td>
                   </tr>

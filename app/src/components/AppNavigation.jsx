@@ -16,7 +16,7 @@ import { NewSupplierModal } from './NewSupplierModal'
 import { NewQuotationModal } from './NewQuotationModal'
 import { catalogApi } from '../services/api'
 
-function AppNavigation() {
+function AppNavigation({ onLogout }) {
   const navigate = useNavigate()
   const { modals, modalData, closeModal, openModal } = useModal()
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
@@ -45,7 +45,8 @@ function AppNavigation() {
     localStorage.removeItem('user')
     localStorage.removeItem('isLoggedIn')
     localStorage.removeItem('accessToken')
-    navigate('/')
+    onLogout()
+    navigate('/login', { replace: true })
   }
 
   return (
