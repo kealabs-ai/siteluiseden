@@ -1,15 +1,32 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useModal } from '../../../ModalContext'
+import { financeApi, getApiError } from '../../../services/api'
+import { useToast } from '../../../ToastContext'
 
 export default function CashFlow() {
-  const [transactions] = useState([
-    { id: 1, description: 'Venda - Arranjo Floral', type: 'entrada', amount: 250.00, date: '2025-01-15', category: 'Vendas' },
-    { id: 2, description: 'Compra - Flores Importadas', type: 'saida', amount: 800.00, date: '2025-01-14', category: 'Compras' },
-    { id: 3, description: 'Venda - Buquê Especial', type: 'entrada', amount: 180.00, date: '2025-01-13', category: 'Vendas' },
-    { id: 4, description: 'Aluguel - Loja', type: 'saida', amount: 2000.00, date: '2025-01-10', category: 'Despesas' },
-    { id: 5, description: 'Venda - Decoração Casamento', type: 'entrada', amount: 1500.00, date: '2025-01-09', category: 'Vendas' },
-    { id: 6, description: 'Salários - Funcionários', type: 'saida', amount: 3500.00, date: '2025-01-05', category: 'Despesas' }
-  ])
+  const [transactions, setTransactions] = useState([])
+  const { addToast } = useToast()
+
+  const loadTransactions = async () => {
+    try {
+      const { data } = await financeApi.list()
+      setTransactions(data.map(transaction => ({
+        ...transaction,
+        description: transaction.descricao,
+        type: transaction.tipo,
+        amount: transaction.valorCents / 100,
+        category: transaction.categoria
+      })))
+    } catch (error) {
+      addToast(getApiError(error, 'Não foi possível carregar o fluxo de caixa.'), 'error')
+    }
+  }
+
+  useEffect(() => {
+    loadTransactions()
+    window.addEventListener('eden:data-changed', loadTransactions)
+    return () => window.removeEventListener('eden:data-changed', loadTransactions)
+  }, [])
 
   const { openModal } = useModal()
   const totalEntradas = transactions.filter(t => t.type === 'entrada').reduce((sum, t) => sum + t.amount, 0)
@@ -104,7 +121,7 @@ export default function CashFlow() {
                       <button onClick={() => openModal('editTransaction', transaction)} className="text-eden-primary hover:text-eden-light transition-colors mr-3">
                         <i className="fa-solid fa-edit"></i>
                       </button>
-                      <button className="text-red-600 hover:text-red-700 transition-colors">
+                      <button onClick={async () => { await financeApi.remove(transaction.id); loadTransactions() }} className="text-red-600 hover:text-red-700 transition-colors">
                         <i className="fa-solid fa-trash"></i>
                       </button>
                     </td>

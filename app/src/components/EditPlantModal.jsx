@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { useToast } from '../ToastContext'
+import { catalogApi, getApiError, notifyDataChanged } from '../services/api'
 
 export function EditPlantModal({ isOpen, onClose, plantData = {} }) {
-  const { showToast } = useToast()
+  const { addToast } = useToast()
   const [formData, setFormData] = useState({
     name: '',
     supplier: '',
@@ -35,15 +36,22 @@ export function EditPlantModal({ isOpen, onClose, plantData = {} }) {
     }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     
     if (!formData.name || !formData.supplier || !formData.cost || !formData.salePrice || !formData.stock) {
-      showToast('Preencha todos os campos obrigatórios', 'error')
+      addToast('Preencha todos os campos obrigatórios', 'error')
       return
     }
 
-    showToast(`Planta "${formData.name}" atualizada com sucesso!`, 'success')
+    try {
+      await catalogApi.update({ id: plantData.id, nome: formData.name, categoria: formData.supplier, precoCents: Math.round(salePrice * 100), estoque: Number(formData.stock) })
+      addToast(`Planta "${formData.name}" atualizada com sucesso!`, 'success')
+      notifyDataChanged('catalogo')
+    } catch (error) {
+      addToast(getApiError(error, 'Não foi possível atualizar a planta.'), 'error')
+      return
+    }
     onClose()
   }
 

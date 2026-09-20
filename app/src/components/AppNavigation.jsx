@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useModal } from '../ModalContext'
 import { QuickSaleModal } from './QuickSaleModal'
@@ -14,6 +14,7 @@ import { EditMaintenanceModal } from './EditMaintenanceModal'
 import { ImportExcelModal } from './ImportExcelModal'
 import { NewSupplierModal } from './NewSupplierModal'
 import { NewQuotationModal } from './NewQuotationModal'
+import { catalogApi } from '../services/api'
 
 function AppNavigation() {
   const navigate = useNavigate()
@@ -24,18 +25,26 @@ function AppNavigation() {
   const userName = user.name || 'Usuário'
   const userInitial = userName.charAt(0).toUpperCase()
 
-  // Mock flowers data - in production, this would come from API
-  const flowers = [
-    { id: 1, name: 'Rosa Vermelha', price: 45.00 },
-    { id: 2, name: 'Orquídea Branca', price: 65.00 },
-    { id: 3, name: 'Girassol', price: 35.00 },
-    { id: 4, name: 'Tulipa', price: 40.00 },
-    { id: 5, name: 'Samambaia', price: 25.00 }
-  ]
+  const [flowers, setFlowers] = useState([])
+
+  useEffect(() => {
+    const loadFlowers = async () => {
+      try {
+        const { data } = await catalogApi.list()
+        setFlowers(data.map(plant => ({ id: plant.id, name: plant.nome, price: plant.precoCents / 100 })))
+      } catch {
+        setFlowers([])
+      }
+    }
+    loadFlowers()
+    window.addEventListener('eden:data-changed', loadFlowers)
+    return () => window.removeEventListener('eden:data-changed', loadFlowers)
+  }, [])
 
   const handleLogout = () => {
     localStorage.removeItem('user')
     localStorage.removeItem('isLoggedIn')
+    localStorage.removeItem('accessToken')
     navigate('/')
   }
 

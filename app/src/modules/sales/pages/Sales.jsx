@@ -1,14 +1,34 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useModal } from '../../../ModalContext'
+import { getApiError, salesApi } from '../../../services/api'
+import { useToast } from '../../../ToastContext'
 
 export default function Sales() {
-  const [sales] = useState([
-    { id: 1, client: 'Ana Maria S.', product: 'Arranjo Floral Premium', date: '2025-01-15', amount: 250.00, status: 'completed', payment: 'Cartão' },
-    { id: 2, client: 'Roberto C.', product: 'Buquê Especial', date: '2025-01-14', amount: 180.00, status: 'completed', payment: 'Dinheiro' },
-    { id: 3, client: 'Juliana & Lucas', product: 'Decoração Casamento', date: '2025-01-13', amount: 1500.00, status: 'pending', payment: 'Transferência' },
-    { id: 4, client: 'Maria Silva', product: 'Rosa Vermelha (12)', date: '2025-01-12', amount: 540.00, status: 'completed', payment: 'Cartão' },
-    { id: 5, client: 'João Santos', product: 'Orquídea Branca', date: '2025-01-11', amount: 65.00, status: 'completed', payment: 'Dinheiro' }
-  ])
+  const [sales, setSales] = useState([])
+  const { addToast } = useToast()
+
+  const loadSales = async () => {
+    try {
+      const { data } = await salesApi.list()
+      setSales(data.map(sale => ({
+        ...sale,
+        client: sale.clienteNome || 'Consumidor final',
+        product: 'Venda registrada',
+        date: sale.createdAt,
+        amount: sale.totalCents / 100,
+        status: sale.status === 'concluida' ? 'completed' : 'pending',
+        payment: 'Não informado'
+      })))
+    } catch (error) {
+      addToast(getApiError(error, 'Não foi possível carregar as vendas.'), 'error')
+    }
+  }
+
+  useEffect(() => {
+    loadSales()
+    window.addEventListener('eden:data-changed', loadSales)
+    return () => window.removeEventListener('eden:data-changed', loadSales)
+  }, [])
 
   const { openModal } = useModal()
 

@@ -1,8 +1,9 @@
 import React, { useState } from 'react'
 import { useToast } from '../ToastContext'
+import { getApiError, notifyDataChanged, supplierApi } from '../services/api'
 
 export function NewSupplierModal({ isOpen, onClose }) {
-  const { showToast } = useToast()
+  const { addToast } = useToast()
   const [formData, setFormData] = useState({
     name: '',
     contact: '',
@@ -22,15 +23,27 @@ export function NewSupplierModal({ isOpen, onClose }) {
     }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     
     if (!formData.name || !formData.contact || !formData.email) {
-      showToast('Preencha os campos obrigatórios', 'error')
+      addToast('Preencha os campos obrigatórios', 'error')
       return
     }
 
-    showToast(`Fornecedor "${formData.name}" cadastrado com sucesso!`, 'success')
+    try {
+      await supplierApi.create({
+        nome: formData.name,
+        email: formData.email,
+        telefone: formData.phone,
+        endereco: [formData.address, formData.city, formData.state].filter(Boolean).join(', ')
+      })
+      addToast(`Fornecedor "${formData.name}" cadastrado com sucesso!`, 'success')
+      notifyDataChanged('fornecedores')
+    } catch (error) {
+      addToast(getApiError(error, 'Não foi possível cadastrar o fornecedor.'), 'error')
+      return
+    }
     setFormData({
       name: '',
       contact: '',

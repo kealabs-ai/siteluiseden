@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useToast } from '../ToastContext'
+import { getApiError, maintenanceApi, notifyDataChanged } from '../services/api'
 
 export function MaintenanceScheduleModal({ isOpen, onClose }) {
   const { addToast } = useToast()
@@ -20,7 +21,7 @@ export function MaintenanceScheduleModal({ isOpen, onClose }) {
     }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     
     if (!formData.clientName || !formData.serviceValue || !formData.scheduledDate || !formData.team) {
@@ -36,7 +37,19 @@ export function MaintenanceScheduleModal({ isOpen, onClose }) {
       custom: 'Avulsa'
     }[formData.frequency]
 
-    addToast(`Manutenção agendada para ${formData.clientName} - ${frequencyLabel} - R$ ${parseFloat(formData.serviceValue).toFixed(2)}`, 'success')
+    try {
+      await maintenanceApi.create({
+        titulo: formData.clientName,
+        descricao: formData.observations || `Serviço de manutenção (${frequencyLabel}) - Equipe ${formData.team}`,
+        dataAgendada: formData.scheduledDate,
+        status: 'agendada'
+      })
+      addToast(`Manutenção agendada para ${formData.clientName} - ${frequencyLabel} - R$ ${parseFloat(formData.serviceValue).toFixed(2)}`, 'success')
+      notifyDataChanged('manutencao')
+    } catch (error) {
+      addToast(getApiError(error, 'Não foi possível agendar a manutenção.'), 'error')
+      return
+    }
     
     setFormData({
       clientName: '',

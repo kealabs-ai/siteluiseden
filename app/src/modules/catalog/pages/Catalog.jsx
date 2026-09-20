@@ -1,17 +1,49 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useModal } from '../../../ModalContext'
+import { catalogApi, getApiError } from '../../../services/api'
+import { useToast } from '../../../ToastContext'
 
 export default function Catalog() {
   const [activeTab, setActiveTab] = useState('flowers')
   const { openModal } = useModal()
+  const { addToast } = useToast()
+  const [loading, setLoading] = useState(true)
+  const [flowers, setFlowers] = useState([])
 
-  const [flowers] = useState([
-    { id: 1, name: 'Rosa Vermelha', category: 'Rosas', price: 45.00, stock: 25, image: '🌹' },
-    { id: 2, name: 'Orquídea Branca', category: 'Orquídeas', price: 65.00, stock: 12, image: '🌸' },
-    { id: 3, name: 'Girassol', category: 'Flores Silvestres', price: 35.00, stock: 30, image: '🌻' },
-    { id: 4, name: 'Tulipa Rosa', category: 'Tulipas', price: 40.00, stock: 18, image: '🌷' },
-    { id: 5, name: 'Samambaia', category: 'Plantas', price: 25.00, stock: 15, image: '🌿' }
-  ])
+  const loadFlowers = async () => {
+    try {
+      const { data } = await catalogApi.list()
+      setFlowers(data.map(plant => ({
+        ...plant,
+        name: plant.nome,
+        category: plant.categoria || 'Plantas',
+        price: plant.precoCents / 100,
+        stock: plant.estoque,
+        image: '🌿'
+      })))
+    } catch (error) {
+      addToast(getApiError(error, 'Não foi possível carregar o catálogo.'), 'error')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadFlowers()
+    const refresh = () => loadFlowers()
+    window.addEventListener('eden:data-changed', refresh)
+    return () => window.removeEventListener('eden:data-changed', refresh)
+  }, [])
+
+  const handleDelete = async (id) => {
+    try {
+      await catalogApi.remove(id)
+      addToast('Planta removida com sucesso.', 'success')
+      loadFlowers()
+    } catch (error) {
+      addToast(getApiError(error, 'Não foi possível remover a planta.'), 'error')
+    }
+  }
 
   const [arrangements] = useState([
     { id: 1, name: 'Arranjo Floral Premium', price: 250.00, flowers: 'Rosa, Orquídea, Samambaia', image: '💐' },
@@ -54,6 +86,8 @@ export default function Catalog() {
               </button>
             </div>
 
+            {loading && <p className="text-stone-600">Carregando catálogo...</p>}
+            {!loading && flowers.length === 0 && <p className="text-stone-600">Nenhuma planta cadastrada.</p>}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {flowers.map(flower => (
                 <div key={flower.id} className="bg-white rounded-xl border border-stone-200 overflow-hidden hover:shadow-lg transition-shadow">
@@ -74,7 +108,7 @@ export default function Catalog() {
                         <i className="fa-solid fa-edit mr-1"></i>
                         Editar
                       </button>
-                      <button className="flex-1 px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors text-sm font-medium">
+                      <button onClick={() => handleDelete(flower.id)} className="flex-1 px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors text-sm font-medium">
                         <i className="fa-solid fa-trash mr-1"></i>
                         Deletar
                       </button>

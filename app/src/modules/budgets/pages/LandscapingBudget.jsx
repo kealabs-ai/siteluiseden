@@ -1,14 +1,33 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useModal } from '../../../ModalContext'
+import { budgetApi, getApiError } from '../../../services/api'
+import { useToast } from '../../../ToastContext'
 
 export default function LandscapingBudget() {
-  const [budgets] = useState([
-    { id: 1, client: 'Condomínio Verde', project: 'Paisagismo Residencial', amount: 5000.00, status: 'approved', date: '2025-01-10' },
-    { id: 2, client: 'Empresa Tech', project: 'Jardim Corporativo', amount: 12000.00, status: 'pending', date: '2025-01-12' },
-    { id: 3, client: 'Casa Moderna', project: 'Jardim Vertical', amount: 3500.00, status: 'approved', date: '2025-01-08' },
-    { id: 4, client: 'Restaurante Flores', project: 'Decoração Externa', amount: 8000.00, status: 'rejected', date: '2025-01-05' },
-    { id: 5, client: 'Casamento Silva', project: 'Decoração Casamento', amount: 2500.00, status: 'approved', date: '2025-01-15' }
-  ])
+  const [budgets, setBudgets] = useState([])
+  const { addToast } = useToast()
+
+  const loadBudgets = async () => {
+    try {
+      const { data } = await budgetApi.list()
+      setBudgets(data.map(budget => ({
+        ...budget,
+        client: budget.clienteNome || 'Sem cliente',
+        project: budget.descricao || 'Projeto de paisagismo',
+        amount: budget.totalCents / 100,
+        date: budget.createdAt,
+        status: budget.status === 'aprovado' ? 'approved' : budget.status === 'rejeitado' ? 'rejected' : 'pending'
+      })))
+    } catch (error) {
+      addToast(getApiError(error, 'Não foi possível carregar os orçamentos.'), 'error')
+    }
+  }
+
+  useEffect(() => {
+    loadBudgets()
+    window.addEventListener('eden:data-changed', loadBudgets)
+    return () => window.removeEventListener('eden:data-changed', loadBudgets)
+  }, [])
 
   const { openModal } = useModal()
 
@@ -115,7 +134,7 @@ export default function LandscapingBudget() {
                       <button onClick={() => openModal('viewBudgetDetails', budget)} className="text-eden-primary hover:text-eden-light transition-colors mr-3">
                         <i className="fa-solid fa-eye"></i>
                       </button>
-                      <button className="text-red-600 hover:text-red-700 transition-colors">
+                      <button onClick={async () => { await budgetApi.remove(budget.id); loadBudgets() }} className="text-red-600 hover:text-red-700 transition-colors">
                         <i className="fa-solid fa-trash"></i>
                       </button>
                     </td>

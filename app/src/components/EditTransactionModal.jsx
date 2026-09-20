@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { useToast } from '../ToastContext'
+import { financeApi, getApiError, notifyDataChanged } from '../services/api'
 
 export function EditTransactionModal({ isOpen, onClose, transactionData = {} }) {
-  const { showToast } = useToast()
+  const { addToast } = useToast()
   const [formData, setFormData] = useState({
     description: '',
     type: 'entrada',
@@ -31,15 +32,22 @@ export function EditTransactionModal({ isOpen, onClose, transactionData = {} }) 
     }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     
     if (!formData.description || !formData.amount || !formData.date) {
-      showToast('Preencha todos os campos obrigatórios', 'error')
+      addToast('Preencha todos os campos obrigatórios', 'error')
       return
     }
 
-    showToast(`Transação "${formData.description}" atualizada com sucesso!`, 'success')
+    try {
+      await financeApi.update({ id: transactionData.id, descricao: formData.description, tipo: formData.type, categoria: formData.category, valorCents: Math.round(parseFloat(formData.amount) * 100), data: formData.date })
+      addToast(`Transação "${formData.description}" atualizada com sucesso!`, 'success')
+      notifyDataChanged('financeiro')
+    } catch (error) {
+      addToast(getApiError(error, 'Não foi possível atualizar a transação.'), 'error')
+      return
+    }
     onClose()
   }
 
