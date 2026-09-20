@@ -178,13 +178,6 @@ function AppNavigation() {
       <QuickSaleModal 
         isOpen={modals.quickSale} 
         onClose={() => closeModal('quickSale')}
-        flowers={[
-          { id: 1, name: 'Rosa Vermelha', price: 45.00 },
-          { id: 2, name: 'Orquídea Branca', price: 65.00 },
-          { id: 3, name: 'Girassol', price: 35.00 },
-          { id: 4, name: 'Tulipa', price: 40.00 },
-          { id: 5, name: 'Samambaia', price: 25.00 }
-        ]}
       />
       <FinancialEntryModal 
         isOpen={modals.financialEntry} 
