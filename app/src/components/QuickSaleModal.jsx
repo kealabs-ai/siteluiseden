@@ -18,8 +18,10 @@ export function QuickSaleModal({ isOpen, onClose, flowers = [] }) {
     flower: '',
     quantity: 1,
     paymentMethod: 'pix',
-    saleDate: getLocalDateTime()
+    saleDate: getLocalDateTime(),
+    discountPercent: 0
   })
+  const [saleItems, setSaleItems] = useState([])
 
   useEffect(() => {
     if (!isOpen) return
@@ -48,11 +50,10 @@ export function QuickSaleModal({ isOpen, onClose, flowers = [] }) {
 
   const availableFlowers = catalogFlowers
   const selectedFlower = availableFlowers.find(f => String(f.id) === String(formData.flower))
-  
-  const costTotal = selectedFlower ? selectedFlower.price * formData.quantity : 0
-  const saleTotal = selectedFlower ? selectedFlower.price * 1.5 * formData.quantity : 0
-  const profit = saleTotal - costTotal
-  const margin = saleTotal > 0 ? ((profit / saleTotal) * 100).toFixed(1) : 0
+  const subtotal = saleItems.reduce((total, item) => total + item.price * item.quantity, 0)
+  const discountPercent = Math.min(100, Math.max(0, Number(formData.discountPercent) || 0))
+  const discountAmount = subtotal * (discountPercent / 100)
+  const saleTotal = subtotal - discountAmount
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -62,11 +63,39 @@ export function QuickSaleModal({ isOpen, onClose, flowers = [] }) {
     }))
   }
 
+  const addItem = () => {
+    if (!selectedFlower || formData.quantity < 1) {
+      addToast('Selecione uma planta e informe uma quantidade válida.', 'error')
+      return
+    }
+
+    setSaleItems(prevItems => {
+      const existingItem = prevItems.find(item => item.id === selectedFlower.id)
+      if (existingItem) {
+        return prevItems.map(item => item.id === selectedFlower.id
+          ? { ...item, quantity: item.quantity + formData.quantity }
+          : item)
+      }
+      return [...prevItems, {
+        id: selectedFlower.id,
+        name: selectedFlower.name,
+        price: selectedFlower.price,
+        quantity: formData.quantity
+      }]
+    })
+
+    setFormData(prev => ({ ...prev, flower: '', quantity: 1 }))
+  }
+
+  const removeItem = (itemId) => {
+    setSaleItems(prevItems => prevItems.filter(item => item.id !== itemId))
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     
-    if (!formData.client || !formData.flower || !formData.saleDate || formData.quantity < 1) {
-      addToast('Preencha todos os campos', 'error')
+    if (!formData.client || saleItems.length === 0 || !formData.saleDate) {
+      addToast('Preencha o cliente, a data e adicione ao menos um item.', 'error')
       return
     }
 
@@ -76,9 +105,9 @@ export function QuickSaleModal({ isOpen, onClose, flowers = [] }) {
         dataVenda: new Date(formData.saleDate).toISOString(),
         totalCents: Math.round(saleTotal * 100),
         status: 'concluida',
-        observacoes: `Produto: ${selectedFlower.name}; Quantidade: ${formData.quantity}; Pagamento: ${formData.paymentMethod}`
+        observacoes: `Itens: ${saleItems.map(item => `${item.quantity}x ${item.name} (R$ ${item.price.toFixed(2)})`).join(', ')}; Desconto: ${discountPercent.toFixed(2)}%; Pagamento: ${formData.paymentMethod}`
       })
-      addToast(`Venda de ${formData.quantity}x ${selectedFlower.name} registrada! Lucro: R$ ${profit.toFixed(2)}`, 'success')
+      addToast('Venda registrada com sucesso!', 'success')
       notifyDataChanged('vendas')
     } catch (error) {
       addToast(getApiError(error, 'Não foi possível registrar a venda.'), 'error')
@@ -90,8 +119,10 @@ export function QuickSaleModal({ isOpen, onClose, flowers = [] }) {
       flower: '',
       quantity: 1,
       paymentMethod: 'pix',
-      saleDate: getLocalDateTime()
+      saleDate: getLocalDateTime(),
+      discountPercent: 0
     })
+    setSaleItems([])
     onClose()
   }
 
@@ -170,6 +201,16 @@ export function QuickSaleModal({ isOpen, onClose, flowers = [] }) {
                 />
               </div>
 
+              <button
+                type="button"
+                onClick={addItem}
+                disabled={catalogLoading || !selectedFlower}
+                className="w-full px-4 py-3 bg-eden-primary text-white rounded-lg hover:bg-eden-light transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <i className="fa-solid fa-cart-plus mr-2"></i>
+                Adicionar Item
+              </button>
+
               <div>
                 <label htmlFor="saleDate" className="block text-sm font-semibold text-stone-700 mb-2">
                   Data da Venda
@@ -203,29 +244,68 @@ export function QuickSaleModal({ isOpen, onClose, flowers = [] }) {
             </div>
 
             {/* Right Column - Summary */}
-            <div className="bg-stone-50 p-6 rounded-xl border-2 border-stone-200">
+              <div className="bg-stone-50 p-6 rounded-xl border-2 border-stone-200">
               <h3 className="text-lg font-bold text-eden-primary mb-6">Resumo Financeiro</h3>
-              
+
+                <div className="mb-5 space-y-3">
+                  {saleItems.length === 0 ? (
+                    <p className="text-sm text-stone-500">Adicione plantas para montar a venda.</p>
+                  ) : (
+                    saleItems.map(item => (
+                      <div key={item.id} className="flex items-center justify-between gap-3 pb-3 border-b border-stone-200">
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-stone-800 truncate">{item.quantity}x {item.name}</p>
+                          <p className="text-xs text-stone-500">R$ {(item.price * item.quantity).toFixed(2)}</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeItem(item.id)}
+                          className="shrink-0 text-red-600 hover:text-red-700"
+                          aria-label={`Remover ${item.name}`}
+                          title={`Remover ${item.name}`}
+                        >
+                          <i className="fa-solid fa-trash"></i>
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </div>
+
               <div className="space-y-4">
                 <div className="flex justify-between items-center pb-4 border-b border-stone-200">
-                  <span className="text-stone-600">Custo Total (Fornecedor):</span>
-                  <span className="text-lg font-semibold text-stone-900">R$ {costTotal.toFixed(2)}</span>
+                    <span className="text-stone-600">Subtotal:</span>
+                    <span className="text-lg font-semibold text-stone-900">R$ {subtotal.toFixed(2)}</span>
                 </div>
 
-                <div className="flex justify-between items-center pb-4 border-b border-stone-200">
-                  <span className="text-stone-600">Valor Total (Cliente):</span>
-                  <span className="text-lg font-semibold text-eden-primary">R$ {saleTotal.toFixed(2)}</span>
-                </div>
+                  <div>
+                    <label htmlFor="discountPercent" className="block text-sm font-semibold text-stone-700 mb-2">
+                      Desconto (%)
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        id="discountPercent"
+                        name="discountPercent"
+                        value={formData.discountPercent}
+                        onChange={handleChange}
+                        min="0"
+                        max="100"
+                        step="0.01"
+                        className="w-full px-4 py-3 pr-10 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
+                      />
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-500">%</span>
+                    </div>
+                  </div>
 
-                <div className="flex justify-between items-center pb-4 border-b-2 border-eden-primary">
-                  <span className="text-stone-600 font-semibold">Lucro Líquido:</span>
-                  <span className="text-2xl font-bold text-green-600">R$ {profit.toFixed(2)}</span>
-                </div>
+                  <div className="flex justify-between items-center pb-4 border-b border-stone-200">
+                    <span className="text-stone-600">Desconto:</span>
+                    <span className="text-lg font-semibold text-red-600">- R$ {discountAmount.toFixed(2)}</span>
+                  </div>
 
-                <div className="flex justify-between items-center pt-4 bg-white p-4 rounded-lg">
-                  <span className="text-stone-600 font-semibold">Margem:</span>
-                  <span className="text-2xl font-bold text-eden-primary">{margin}%</span>
-                </div>
+                  <div className="flex justify-between items-center pt-2 bg-white p-4 rounded-lg">
+                    <span className="text-stone-600 font-semibold">Preço Final:</span>
+                    <span className="text-2xl font-bold text-eden-primary">R$ {saleTotal.toFixed(2)}</span>
+                  </div>
               </div>
 
               {selectedFlower && (
