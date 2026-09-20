@@ -2,6 +2,12 @@ import React, { useEffect, useState } from 'react'
 import { useToast } from '../ToastContext'
 import { catalogApi, getApiError, notifyDataChanged, salesApi } from '../services/api'
 
+const getLocalDateTime = () => {
+  const now = new Date()
+  const offset = now.getTimezoneOffset() * 60000
+  return new Date(now.getTime() - offset).toISOString().slice(0, 16)
+}
+
 export function QuickSaleModal({ isOpen, onClose, flowers = [] }) {
   const { addToast } = useToast()
   const [catalogFlowers, setCatalogFlowers] = useState([])
@@ -11,7 +17,8 @@ export function QuickSaleModal({ isOpen, onClose, flowers = [] }) {
     client: '',
     flower: '',
     quantity: 1,
-    paymentMethod: 'pix'
+    paymentMethod: 'pix',
+    saleDate: getLocalDateTime()
   })
 
   useEffect(() => {
@@ -58,7 +65,7 @@ export function QuickSaleModal({ isOpen, onClose, flowers = [] }) {
   const handleSubmit = async (e) => {
     e.preventDefault()
     
-    if (!formData.client || !formData.flower || formData.quantity < 1) {
+    if (!formData.client || !formData.flower || !formData.saleDate || formData.quantity < 1) {
       addToast('Preencha todos os campos', 'error')
       return
     }
@@ -66,6 +73,7 @@ export function QuickSaleModal({ isOpen, onClose, flowers = [] }) {
     try {
       await salesApi.create({
         clienteNome: formData.client,
+        dataVenda: new Date(formData.saleDate).toISOString(),
         totalCents: Math.round(saleTotal * 100),
         status: 'concluida',
         observacoes: `Produto: ${selectedFlower.name}; Quantidade: ${formData.quantity}; Pagamento: ${formData.paymentMethod}`
@@ -81,7 +89,8 @@ export function QuickSaleModal({ isOpen, onClose, flowers = [] }) {
       client: '',
       flower: '',
       quantity: 1,
-      paymentMethod: 'pix'
+      paymentMethod: 'pix',
+      saleDate: getLocalDateTime()
     })
     onClose()
   }
@@ -153,6 +162,20 @@ export function QuickSaleModal({ isOpen, onClose, flowers = [] }) {
                   value={formData.quantity}
                   onChange={handleChange}
                   min="1"
+                  className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="saleDate" className="block text-sm font-semibold text-stone-700 mb-2">
+                  Data da Venda
+                </label>
+                <input
+                  type="datetime-local"
+                  id="saleDate"
+                  name="saleDate"
+                  value={formData.saleDate}
+                  onChange={handleChange}
                   className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
                 />
               </div>
