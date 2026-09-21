@@ -15,6 +15,7 @@ import Catalog from './modules/catalog/pages/Catalog'
 import LandscapingBudget from './modules/budgets/pages/LandscapingBudget'
 import MaintenanceSchedule from './modules/maintenance/pages/MaintenanceSchedule'
 import Supplier from './modules/supplier/pages/Supplier'
+import Users from './modules/users/pages/Users'
 
 // Componentes Compartilhados
 import Navigation from './components/Navigation'
@@ -25,15 +26,21 @@ import AppSidebar from './components/AppSidebar'
 import Home from './pages/Home'
 
 // Componente de Rota Protegida
-function ProtectedRoute({ isLoggedIn, children }) {
-  return isLoggedIn ? children : <Navigate to="/login" replace />
+function ProtectedRoute({ isLoggedIn, permission, children }) {
+  if (!isLoggedIn) return <Navigate to="/login" replace />
+  if (permission) {
+    const user = JSON.parse(localStorage.getItem('user') || '{}')
+    const permissions = user.role === 'admin' ? ['dashboard', 'catalog', 'sales', 'budget', 'cashflow', 'maintenance', 'supplier', 'users'] : user.permissoes || ['dashboard']
+    if (!permissions.includes(permission)) return <Navigate to="/dashboard" replace />
+  }
+  return children
 }
 
 // Componente para renderizar conteúdo com Navigation condicional
 function AppContent({ isLoggedIn, setIsLoggedIn }) {
   const location = useLocation()
   const isLoginPage = location.pathname === '/login'
-  const isAppPage = location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/cash-flow') || location.pathname.startsWith('/sales') || location.pathname.startsWith('/catalog') || location.pathname.startsWith('/landscaping-budget') || location.pathname.startsWith('/maintenance-schedule') || location.pathname.startsWith('/supplier')
+  const isAppPage = location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/cash-flow') || location.pathname.startsWith('/sales') || location.pathname.startsWith('/catalog') || location.pathname.startsWith('/landscaping-budget') || location.pathname.startsWith('/maintenance-schedule') || location.pathname.startsWith('/supplier') || location.pathname.startsWith('/users')
 
   return (
     <div className="app">
@@ -107,6 +114,15 @@ function AppContent({ isLoggedIn, setIsLoggedIn }) {
             element={
               <ProtectedRoute isLoggedIn={isLoggedIn}>
                 <Supplier />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/users"
+            element={
+              <ProtectedRoute isLoggedIn={isLoggedIn} permission="users">
+                <Users />
               </ProtectedRoute>
             }
           />

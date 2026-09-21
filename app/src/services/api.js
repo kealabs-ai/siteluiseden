@@ -71,6 +71,14 @@ export const supplierApi = {
   remove: (id) => api.post('/fornecedores/delete', { id })
 }
 
+export const usersApi = {
+  list: () => api.get('/usuarios'),
+  create: (data) => api.post('/usuarios', data),
+  update: (data) => api.post('/usuarios/update', data),
+  remove: (id) => api.post('/usuarios/delete', { id }),
+  updatePassword: (id, senha) => api.post('/usuarios/senha', { id, senha })
+}
+
 export const notifyDataChanged = (resource) => {
   window.dispatchEvent(new CustomEvent('eden:data-changed', { detail: { resource } }))
 }

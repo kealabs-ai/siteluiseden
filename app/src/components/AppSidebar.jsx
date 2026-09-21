@@ -4,6 +4,10 @@ import { useLocation, Link } from 'react-router-dom'
 function AppSidebar() {
   const location = useLocation()
   const [isCollapsed, setIsCollapsed] = useState(false)
+  const user = JSON.parse(localStorage.getItem('user') || '{}')
+  const permissions = user.role === 'admin'
+    ? ['dashboard', 'catalog', 'sales', 'budget', 'cashflow', 'maintenance', 'supplier', 'users']
+    : user.permissoes || ['dashboard']
 
   const modules = [
     {
@@ -54,6 +58,13 @@ function AppSidebar() {
       icon: 'fa-truck',
       path: '/supplier',
       color: 'from-indigo-500 to-indigo-600'
+    },
+    {
+      id: 'users',
+      label: 'Usuários e Acessos',
+      icon: 'fa-users-gear',
+      path: '/users',
+      color: 'from-teal-500 to-teal-600'
     }
   ]
 
@@ -82,7 +93,7 @@ function AppSidebar() {
           </p>
         </div>
 
-        {modules.map(module => (
+        {modules.filter(module => permissions.includes(module.id)).map(module => (
           <Link
             key={module.id}
             to={module.path}
