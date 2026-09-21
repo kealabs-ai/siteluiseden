@@ -72,70 +72,81 @@ function AppSidebar() {
 
   return (
     <aside
-      className={`fixed left-0 top-16 h-[calc(100vh-64px)] bg-white border-r border-stone-200 transition-all duration-300 z-40 ${
-        isCollapsed ? 'w-24' : 'w-72'
+      className={`fixed left-0 top-16 h-[calc(100vh-64px)] bg-gradient-to-b from-white to-stone-50 border-r border-stone-200 transition-all duration-300 z-40 flex flex-col ${
+        isCollapsed ? 'w-20' : 'w-72'
       }`}
     >
       {/* Collapse Button */}
       <button
         onClick={() => setIsCollapsed(!isCollapsed)}
-        className="absolute -right-3 top-4 bg-white border border-stone-200 rounded-full p-1 hover:bg-stone-50 transition-colors"
+        className="absolute -right-3 top-4 bg-white border border-stone-200 rounded-full p-1 hover:bg-stone-100 transition-colors shadow-sm"
         aria-label="Toggle sidebar"
       >
-        <i className={`fa-solid fa-chevron-${isCollapsed ? 'right' : 'left'} text-stone-600`}></i>
+        <i className={`fa-solid fa-chevron-${isCollapsed ? 'right' : 'left'} text-stone-600 text-xs`}></i>
       </button>
 
-      {/* Modules List */}
-      <nav className="p-4 space-y-2 overflow-y-auto h-full">
-        <div className={`${isCollapsed ? 'text-center' : ''} mb-6`}>
-          <p className={`text-xs font-semibold text-stone-500 uppercase tracking-wider ${isCollapsed ? 'hidden' : ''}`}>
-            Módulos
-          </p>
+      {/* Header */}
+      {!isCollapsed && (
+        <div className="px-6 py-4 border-b border-stone-200">
+          <p className="text-xs font-bold text-stone-500 uppercase tracking-widest">Módulos</p>
         </div>
+      )}
 
+      {/* Modules List */}
+      <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
         {modules.filter(module => permissions.includes(module.id)).map(module => (
           <Link
             key={module.id}
             to={module.path}
-            className={`flex items-center justify-center lg:justify-start gap-3 px-4 py-3 rounded-lg transition-all group ${
+            className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 group ${
               isActive(module.path)
-                ? `bg-gradient-to-r ${module.color} text-white shadow-lg`
-                : 'text-stone-700 hover:bg-stone-50'
+                ? `bg-gradient-to-r ${module.color} text-white shadow-md`
+                : 'text-stone-700 hover:bg-stone-100'
             }`}
             title={isCollapsed ? module.label : ''}
           >
             <div
-              className={`flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
+              className={`flex-shrink-0 w-9 h-9 rounded-md flex items-center justify-center transition-all ${
                 isActive(module.path)
                   ? 'bg-white/20'
-                  : `bg-gradient-to-r ${module.color} text-white group-hover:shadow-md`
+                  : `bg-gradient-to-r ${module.color} text-white`
               }`}
             >
-              <i className={`fa-solid ${module.icon} text-lg`}></i>
+              <i className={`fa-solid ${module.icon} text-sm`}></i>
             </div>
 
             {!isCollapsed && (
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold truncate">{module.label}</p>
-              </div>
-            )}
-
-            {!isCollapsed && isActive(module.path) && (
-              <i className="fa-solid fa-check text-white flex-shrink-0"></i>
+              <>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{module.label}</p>
+                </div>
+                {isActive(module.path) && (
+                  <i className="fa-solid fa-check text-white flex-shrink-0 text-xs"></i>
+                )}
+              </>
             )}
           </Link>
         ))}
       </nav>
 
       {/* Footer Info */}
-      {!isCollapsed && (
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-stone-200 bg-stone-50">
-          <p className="text-xs text-stone-500 text-center">
-            <i className="fa-solid fa-leaf text-eden-primary mr-1"></i>
-            Luis Eden
-          </p>
-        </div>
-      )}
+      <div className={`border-t border-stone-200 bg-stone-50 transition-all ${
+        isCollapsed ? 'px-3 py-3' : 'px-6 py-4'
+      }`}>
+        {!isCollapsed ? (
+          <div className="text-center">
+            <p className="text-xs font-semibold text-stone-600 flex items-center justify-center gap-1">
+              <i className="fa-solid fa-leaf text-eden-primary"></i>
+              Luis Eden
+            </p>
+            <p className="text-xs text-stone-400 mt-1">Gestão</p>
+          </div>
+        ) : (
+          <div className="text-center">
+            <i className="fa-solid fa-leaf text-eden-primary text-lg"></i>
+          </div>
+        )}
+      </div>
     </aside>
   )
 }

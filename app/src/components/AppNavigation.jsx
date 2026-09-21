@@ -21,10 +21,12 @@ function AppNavigation({ onLogout }) {
   const navigate = useNavigate()
   const { modals, modalData, closeModal, openModal } = useModal()
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const [isVersionOpen, setIsVersionOpen] = useState(false)
   
   const user = JSON.parse(localStorage.getItem('user') || '{}')
   const userName = user.name || 'Usuário'
   const userInitial = userName.charAt(0).toUpperCase()
+  const appVersion = '1.0.0'
 
   const [flowers, setFlowers] = useState([])
 
@@ -89,6 +91,48 @@ function AppNavigation({ onLogout }) {
 
           {/* User Info and Avatar - Right Side */}
           <div className="flex items-center gap-4">
+            {/* Version Button */}
+            <div className="relative hidden sm:block">
+              <button
+                onClick={() => setIsVersionOpen(!isVersionOpen)}
+                className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-stone-600 hover:bg-stone-100 rounded-lg transition-colors"
+                title="Informações de versão"
+              >
+                <i className="fa-solid fa-code-branch"></i>
+                v{appVersion}
+              </button>
+
+              {/* Version Dropdown */}
+              {isVersionOpen && (
+                <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-stone-200 overflow-hidden z-50">
+                  <div className="px-4 py-3 border-b border-stone-200 bg-gradient-to-r from-eden-primary to-eden-light">
+                    <p className="text-sm font-bold text-white">Informações do Sistema</p>
+                  </div>
+                  <div className="p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-stone-600 font-medium">Versão:</span>
+                      <span className="text-sm font-bold text-eden-primary">{appVersion}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-stone-600 font-medium">Ambiente:</span>
+                      <span className="text-sm font-medium text-stone-700">Produção</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-stone-600 font-medium">Status:</span>
+                      <span className="text-sm font-medium text-green-600 flex items-center gap-1">
+                        <i className="fa-solid fa-circle text-green-500 text-xs"></i>
+                        Online
+                      </span>
+                    </div>
+                    <hr className="border-stone-200" />
+                    <p className="text-xs text-stone-500 text-center">
+                      Luis Eden Paisagismo & Floricultura
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* User Name */}
             <div className="hidden sm:flex flex-col items-end">
               <p className="text-sm font-semibold text-stone-900">{userName}</p>
