@@ -5,6 +5,9 @@ import { useToast } from '../../../ToastContext'
 
 export default function Sales() {
   const [sales, setSales] = useState([])
+  const [clientFilter, setClientFilter] = useState('')
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
   const { addToast } = useToast()
 
   const loadSales = async () => {
@@ -14,7 +17,7 @@ export default function Sales() {
         ...sale,
         client: sale.clienteNome || 'Consumidor final',
         product: 'Venda registrada',
-        date: sale.createdAt,
+        date: sale.dataVenda || sale.createdAt,
         amount: sale.totalCents / 100,
         status: sale.status === 'cancelada' ? 'cancelled' : sale.status === 'concluida' ? 'completed' : 'pending',
         payment: 'Não informado'
@@ -44,9 +47,17 @@ export default function Sales() {
     return 'Pendente'
   }
 
-  const activeSales = sales.filter(sale => sale.status !== 'cancelled')
-  const totalSales = activeSales.reduce((sum, sale) => sum + sale.amount, 0)
-  const completedSales = sales.filter(s => s.status === 'completed').length
+  const filteredSales = sales.filter(sale => {
+    const saleDate = new Date(sale.date)
+    const saleDay = saleDate.toISOString().slice(0, 10)
+    const matchesClient = !clientFilter || sale.client.toLowerCase().includes(clientFilter.toLowerCase())
+    const matchesStart = !startDate || saleDay >= startDate
+    const matchesEnd = !endDate || saleDay <= endDate
+    return matchesClient && matchesStart && matchesEnd
+  })
+  const filteredActiveSales = filteredSales.filter(sale => sale.status !== 'cancelled')
+  const totalSales = filteredActiveSales.reduce((sum, sale) => sum + sale.amount, 0)
+  const completedSales = filteredSales.filter(s => s.status === 'completed').length
 
   const handleCancel = async (sale) => {
     if (sale.status === 'cancelled' || !window.confirm('Deseja cancelar esta venda e devolver os itens ao estoque?')) return
@@ -76,7 +87,7 @@ export default function Sales() {
               <i className="fa-solid fa-shopping-cart text-green-500 text-2xl"></i>
             </div>
             <p className="text-3xl font-bold text-eden-primary">R$ {totalSales.toFixed(2)}</p>
-            <p className="text-xs text-stone-500 mt-2">{sales.length} transações</p>
+            <p className="text-xs text-stone-500 mt-2">{filteredSales.length} transações</p>
           </div>
 
           <div className="bg-white rounded-xl p-6 border border-stone-200">
@@ -93,7 +104,7 @@ export default function Sales() {
               <h3 className="text-sm font-medium text-stone-600">Ticket Médio</h3>
               <i className="fa-solid fa-money-bill-wave text-blue-500 text-2xl"></i>
             </div>
-            <p className="text-3xl font-bold text-eden-primary">R$ {(totalSales / sales.length).toFixed(2)}</p>
+            <p className="text-3xl font-bold text-eden-primary">R$ {(totalSales / (filteredActiveSales.length || 1)).toFixed(2)}</p>
             <p className="text-xs text-stone-500 mt-2">Por venda</p>
           </div>
         </div>
@@ -106,6 +117,40 @@ export default function Sales() {
               <i className="fa-solid fa-plus mr-2"></i>
               Nova Venda
             </button>
+          </div>
+
+          <div className="p-6 border-b border-stone-200 bg-stone-50 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label htmlFor="clientFilter" className="block text-sm font-semibold text-stone-700 mb-2">Cliente</label>
+              <input
+                id="clientFilter"
+                type="search"
+                value={clientFilter}
+                onChange={(event) => setClientFilter(event.target.value)}
+                placeholder="Buscar cliente"
+                className="w-full px-4 py-2 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary"
+              />
+            </div>
+            <div>
+              <label htmlFor="startDate" className="block text-sm font-semibold text-stone-700 mb-2">De</label>
+              <input
+                id="startDate"
+                type="date"
+                value={startDate}
+                onChange={(event) => setStartDate(event.target.value)}
+                className="w-full px-4 py-2 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary"
+              />
+            </div>
+            <div>
+              <label htmlFor="endDate" className="block text-sm font-semibold text-stone-700 mb-2">Até</label>
+              <input
+                id="endDate"
+                type="date"
+                value={endDate}
+                onChange={(event) => setEndDate(event.target.value)}
+                className="w-full px-4 py-2 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary"
+              />
+            </div>
           </div>
 
           <div className="overflow-x-auto">
@@ -123,7 +168,7 @@ export default function Sales() {
                 </tr>
               </thead>
               <tbody>
-                {sales.map(sale => (
+                {filteredSales.map(sale => (
                   <tr key={sale.id} className="border-b border-stone-200 hover:bg-stone-50 transition-colors">
                     <td className="px-6 py-4 text-sm font-medium text-stone-900">#{sale.id}</td>
                     <td className="px-6 py-4 text-sm text-stone-600">{sale.client}</td>
@@ -155,6 +200,7 @@ export default function Sales() {
                 ))}
               </tbody>
             </table>
+            {filteredSales.length === 0 && <p className="p-6 text-center text-stone-600">Nenhuma venda encontrada para os filtros selecionados.</p>}
           </div>
         </div>
       </main>

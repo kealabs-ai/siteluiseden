@@ -12,6 +12,7 @@ export function ModalProvider({ children }) {
     editPlant: false,
     editTransaction: false,
     editMaintenance: false,
+    viewPlant: false,
     viewSaleDetails: false,
     viewBudgetDetails: false,
     importExcel: false,

@@ -8,6 +8,7 @@ import { MaintenanceScheduleModal } from './MaintenanceScheduleModal'
 import { BudgetBuilderModal } from './BudgetBuilderModal'
 import { ViewSaleDetailsModal } from './ViewSaleDetailsModal'
 import { ViewBudgetDetailsModal } from './ViewBudgetDetailsModal'
+import { ViewPlantDetailsModal } from './ViewPlantDetailsModal'
 import { EditPlantModal } from './EditPlantModal'
 import { EditTransactionModal } from './EditTransactionModal'
 import { EditMaintenanceModal } from './EditMaintenanceModal'
@@ -205,6 +206,11 @@ function AppNavigation({ onLogout }) {
         isOpen={modals.viewBudgetDetails} 
         onClose={() => closeModal('viewBudgetDetails')}
         budgetData={modalData.viewBudgetDetails}
+      />
+      <ViewPlantDetailsModal
+        isOpen={modals.viewPlant}
+        onClose={() => closeModal('viewPlant')}
+        plantData={modalData.viewPlant}
       />
       <EditPlantModal 
         isOpen={modals.editPlant} 
