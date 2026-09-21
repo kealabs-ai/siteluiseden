@@ -18,6 +18,7 @@ export default function Catalog() {
         name: plant.nome,
         category: plant.categoria || 'Plantas',
         price: plant.precoCents / 100,
+        cost: plant.custoCents / 100,
         stock: plant.estoque,
         image: '🌿'
       })))
@@ -104,6 +105,10 @@ export default function Catalog() {
                       </span>
                     </div>
                     <div className="flex gap-2">
+                      <button onClick={() => openModal('viewPlant', flower)} className="flex-1 px-3 py-2 bg-eden-accent-light text-eden-primary rounded-lg hover:bg-eden-accent transition-colors text-sm font-medium">
+                        <i className="fa-solid fa-eye mr-1"></i>
+                        Visualizar
+                      </button>
                       <button onClick={() => openModal('editPlant', flower)} className="flex-1 px-3 py-2 bg-stone-100 text-stone-700 rounded-lg hover:bg-stone-200 transition-colors text-sm font-medium">
                         <i className="fa-solid fa-edit mr-1"></i>
                         Editar
