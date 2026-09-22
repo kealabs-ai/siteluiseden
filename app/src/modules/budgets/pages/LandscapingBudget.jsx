@@ -6,6 +6,7 @@ import { useToast } from '../../../ToastContext'
 export default function LandscapingBudget() {
   const [budgets, setBudgets] = useState([])
   const { addToast } = useToast()
+  const { openModal, openConfirmation } = useModal()
 
   const loadBudgets = async () => {
     try {
@@ -29,8 +30,6 @@ export default function LandscapingBudget() {
     return () => window.removeEventListener('eden:data-changed', loadBudgets)
   }, [])
 
-  const { openModal } = useModal()
-
   const getStatusColor = (status) => {
     switch(status) {
       case 'approved': return 'bg-green-100 text-green-800'
@@ -47,6 +46,24 @@ export default function LandscapingBudget() {
       case 'rejected': return 'Rejeitado'
       default: return 'Desconhecido'
     }
+  }
+
+  const handleDeleteBudget = (budget) => {
+    openConfirmation(
+      'Deletar Orçamento',
+      `Tem certeza que deseja remover o orçamento para "${budget.client}"? Esta ação não pode ser desfeita.`,
+      async () => {
+        try {
+          await budgetApi.remove(budget.id)
+          addToast('Orçamento removido com sucesso!', 'success')
+          loadBudgets()
+        } catch (error) {
+          addToast(getApiError(error, 'Não foi possível remover o orçamento.'), 'error')
+        }
+      },
+      () => {},
+      { confirmText: 'Deletar', cancelText: 'Cancelar', isDangerous: true }
+    )
   }
 
   const totalBudgets = budgets.reduce((sum, b) => sum + b.amount, 0)
@@ -87,7 +104,7 @@ export default function LandscapingBudget() {
               <i className="fa-solid fa-chart-pie text-purple-500 text-2xl"></i>
             </div>
             <p className="text-3xl font-bold text-eden-primary">
-              {((budgets.filter(b => b.status === 'approved').length / budgets.length) * 100).toFixed(0)}%
+              {budgets.length > 0 ? ((budgets.filter(b => b.status === 'approved').length / budgets.length) * 100).toFixed(0) : 0}%
             </p>
             <p className="text-xs text-stone-500 mt-2">De orçamentos</p>
           </div>
@@ -134,7 +151,7 @@ export default function LandscapingBudget() {
                       <button onClick={() => openModal('viewBudgetDetails', budget)} className="text-eden-primary hover:text-eden-light transition-colors mr-3">
                         <i className="fa-solid fa-eye"></i>
                       </button>
-                      <button onClick={async () => { await budgetApi.remove(budget.id); loadBudgets() }} className="text-red-600 hover:text-red-700 transition-colors">
+                      <button onClick={() => handleDeleteBudget(budget)} className="text-red-600 hover:text-red-700 transition-colors">
                         <i className="fa-solid fa-trash"></i>
                       </button>
                     </td>
