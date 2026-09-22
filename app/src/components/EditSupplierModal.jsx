@@ -1,81 +1,74 @@
 import React, { useState, useEffect } from 'react'
 import { useToast } from '../ToastContext'
-import { getApiError, notifyDataChanged, quotationApi, supplierApi } from '../services/api'
+import { getApiError, notifyDataChanged, supplierApi } from '../services/api'
 
-export function NewQuotationModal({ isOpen, onClose }) {
+export function EditSupplierModal({ isOpen, onClose, supplier }) {
   const { addToast } = useToast()
-  const [suppliers, setSuppliers] = useState([])
   const [formData, setFormData] = useState({
-    supplierId: '',
-    description: '',
-    quantity: 1,
-    costPrice: '',
-    salePrice: ''
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+    category: '',
+    active: true
   })
 
   useEffect(() => {
-    if (isOpen) {
-      loadSuppliers()
+    if (supplier) {
+      setFormData({
+        name: supplier.nome || '',
+        email: supplier.email || '',
+        phone: supplier.telefone || '',
+        address: supplier.endereco || '',
+        category: supplier.categoria || '',
+        active: supplier.ativo !== false
+      })
     }
-  }, [isOpen])
-
-  const loadSuppliers = async () => {
-    try {
-      const { data } = await supplierApi.list()
-      setSuppliers(data)
-    } catch (error) {
-      addToast(getApiError(error, 'Não foi possível carregar fornecedores.'), 'error')
-    }
-  }
+  }, [supplier, isOpen])
 
   const handleChange = (e) => {
-    const { name, value } = e.target
+    const { name, value, type, checked } = e.target
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'quantity' ? parseInt(value) || 1 : value
+      [name]: type === 'checkbox' ? checked : value
     }))
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     
-    if (!formData.supplierId || !formData.description || !formData.costPrice || !formData.salePrice) {
-      addToast('Preencha todos os campos obrigatórios', 'error')
+    if (!formData.name || !formData.email) {
+      addToast('Preencha os campos obrigatórios', 'error')
       return
     }
 
     try {
-      await quotationApi.create({
-        fornecedorId: formData.supplierId,
-        descricao: formData.description,
-        quantidade: formData.quantity,
-        precoCustoCents: Math.round(parseFloat(formData.costPrice) * 100),
-        precoVendaCents: Math.round(parseFloat(formData.salePrice) * 100)
+      await supplierApi.update({
+        id: supplier.id,
+        nome: formData.name,
+        email: formData.email,
+        telefone: formData.phone,
+        endereco: formData.address,
+        categoria: formData.category,
+        ativo: formData.active
       })
-      addToast('Cotação cadastrada com sucesso!', 'success')
-      notifyDataChanged('cotacoes')
-      setFormData({
-        supplierId: '',
-        description: '',
-        quantity: 1,
-        costPrice: '',
-        salePrice: ''
-      })
+      addToast(`Fornecedor "${formData.name}" atualizado com sucesso!`, 'success')
+      notifyDataChanged('fornecedores')
       onClose()
     } catch (error) {
-      addToast(getApiError(error, 'Não foi possível cadastrar a cotação.'), 'error')
+      addToast(getApiError(error, 'Não foi possível atualizar o fornecedor.'), 'error')
     }
   }
 
-  if (!isOpen) return null
+  if (!isOpen || !supplier) return null
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-gradient-to-r from-eden-primary to-eden-light text-white p-6 flex items-center justify-between">
           <h2 className="text-2xl font-bold flex items-center gap-2">
-            <i className="fa-solid fa-file-invoice"></i>
-            Nova Cotação
+            <i className="fa-solid fa-edit"></i>
+            Editar Fornecedor
           </h2>
           <button onClick={onClose} className="hover:opacity-80 transition-opacity">
             <i className="fa-solid fa-times text-2xl"></i>
@@ -87,45 +80,39 @@ export function NewQuotationModal({ isOpen, onClose }) {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-semibold text-stone-700 mb-2">
-                  Fornecedor *
-                </label>
-                <select
-                  name="supplierId"
-                  value={formData.supplierId}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
-                >
-                  <option value="">Selecione um fornecedor</option>
-                  {suppliers.map(s => (
-                    <option key={s.id} value={s.id}>{s.nome}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-stone-700 mb-2">
-                  Descrição do Produto *
+                  Nome da Empresa *
                 </label>
                 <input
                   type="text"
-                  name="description"
-                  value={formData.description}
+                  name="name"
+                  value={formData.name}
                   onChange={handleChange}
-                  placeholder="Ex: Rosa Vermelha Premium"
                   className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-semibold text-stone-700 mb-2">
-                  Quantidade *
+                  Email *
                 </label>
                 <input
-                  type="number"
-                  name="quantity"
-                  value={formData.quantity}
+                  type="email"
+                  name="email"
+                  value={formData.email}
                   onChange={handleChange}
-                  min="1"
+                  className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">
+                  Telefone
+                </label>
+                <input
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
                   className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
                 />
               </div>
@@ -134,44 +121,44 @@ export function NewQuotationModal({ isOpen, onClose }) {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-semibold text-stone-700 mb-2">
-                  Preço de Custo (R$) *
+                  Endereço
                 </label>
                 <input
-                  type="number"
-                  name="costPrice"
-                  value={formData.costPrice}
+                  type="text"
+                  name="address"
+                  value={formData.address}
                   onChange={handleChange}
-                  placeholder="0.00"
-                  step="0.01"
-                  min="0"
                   className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-semibold text-stone-700 mb-2">
-                  Preço de Venda (R$) *
+                  Categoria
                 </label>
                 <input
-                  type="number"
-                  name="salePrice"
-                  value={formData.salePrice}
+                  type="text"
+                  name="category"
+                  value={formData.category}
                   onChange={handleChange}
-                  placeholder="0.00"
-                  step="0.01"
-                  min="0"
+                  placeholder="Ex: Flores, Plantas, Insumos"
                   className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
                 />
               </div>
 
-              {formData.costPrice && formData.salePrice && (
-                <div className="bg-eden-primary/10 p-4 rounded-lg">
-                  <p className="text-sm text-stone-600">Margem de Lucro:</p>
-                  <p className="text-2xl font-bold text-eden-primary">
-                    {(((parseFloat(formData.salePrice) - parseFloat(formData.costPrice)) / parseFloat(formData.costPrice)) * 100).toFixed(1)}%
-                  </p>
-                </div>
-              )}
+              <div className="flex items-center gap-3 pt-2">
+                <input
+                  type="checkbox"
+                  id="active"
+                  name="active"
+                  checked={formData.active}
+                  onChange={handleChange}
+                  className="w-5 h-5 rounded border-stone-300 text-eden-primary focus:ring-eden-primary"
+                />
+                <label htmlFor="active" className="text-sm font-semibold text-stone-700">
+                  Fornecedor Ativo
+                </label>
+              </div>
             </div>
           </div>
 
@@ -188,7 +175,7 @@ export function NewQuotationModal({ isOpen, onClose }) {
               className="flex-1 px-6 py-3 bg-gradient-to-r from-eden-primary to-eden-light text-white rounded-lg hover:shadow-lg transition-all font-semibold flex items-center justify-center gap-2"
             >
               <i className="fa-solid fa-check"></i>
-              Cadastrar Cotação
+              Salvar Alterações
             </button>
           </div>
         </form>

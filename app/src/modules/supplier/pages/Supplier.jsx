@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useModal } from '../../../ModalContext'
-import { getApiError, supplierApi } from '../../../services/api'
+import { getApiError, quotationApi, supplierApi } from '../../../services/api'
 import { useToast } from '../../../ToastContext'
 
 export default function Supplier() {
@@ -8,6 +8,8 @@ export default function Supplier() {
   const { openModal } = useModal()
 
   const [suppliers, setSuppliers] = useState([])
+  const [quotations, setQuotations] = useState([])
+  const [suppliersMap, setSuppliersMap] = useState({})
   const { addToast } = useToast()
 
   const loadSuppliers = async () => {
@@ -21,8 +23,30 @@ export default function Supplier() {
         status: supplier.ativo ? 'active' : 'inactive',
         lastOrder: supplier.createdAt
       })))
+      const map = {}
+      data.forEach(s => { map[s.id] = s.nome })
+      setSuppliersMap(map)
     } catch (error) {
       addToast(getApiError(error, 'Não foi possível carregar os fornecedores.'), 'error')
+    }
+  }
+
+  const loadQuotations = async () => {
+    try {
+      const { data } = await quotationApi.list()
+      setQuotations(data.map(q => ({
+        ...q,
+        supplier: suppliersMap[q.fornecedorId] || 'Desconhecido',
+        product: q.descricao,
+        quantity: q.quantidade,
+        costPrice: q.precoCustoCents / 100,
+        salePrice: q.precoVendaCents / 100,
+        margin: q.precoCustoCents > 0 ? (((q.precoVendaCents - q.precoCustoCents) / q.precoCustoCents) * 100) : 0,
+        date: q.createdAt,
+        status: q.ativo ? 'active' : 'inactive'
+      })))
+    } catch (error) {
+      addToast(getApiError(error, 'Não foi possível carregar as cotações.'), 'error')
     }
   }
 
@@ -32,12 +56,16 @@ export default function Supplier() {
     return () => window.removeEventListener('eden:data-changed', loadSuppliers)
   }, [])
 
-  const [quotations] = useState([
-    { id: 1, supplier: 'Flores Brasil', product: 'Rosa Vermelha', quantity: 100, costPrice: 25.00, salePrice: 45.00, margin: 44.4, date: '2025-01-15', status: 'active' },
-    { id: 2, supplier: 'Plantas Premium', product: 'Orquídea Branca', quantity: 50, costPrice: 40.00, salePrice: 65.00, margin: 38.5, date: '2025-01-14', status: 'active' },
-    { id: 3, supplier: 'Flores Brasil', product: 'Girassol', quantity: 200, costPrice: 18.00, salePrice: 35.00, margin: 48.6, date: '2025-01-13', status: 'active' },
-    { id: 4, supplier: 'Importações Verdes', product: 'Tulipa', quantity: 150, costPrice: 22.00, salePrice: 40.00, margin: 45.0, date: '2025-01-12', status: 'inactive' }
-  ])
+  useEffect(() => {
+    if (Object.keys(suppliersMap).length > 0) {
+      loadQuotations()
+    }
+  }, [suppliersMap])
+
+  useEffect(() => {
+    window.addEventListener('eden:data-changed', loadQuotations)
+    return () => window.removeEventListener('eden:data-changed', loadQuotations)
+  }, [suppliersMap])
 
   const getStatusColor = (status) => {
     return status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
@@ -51,6 +79,30 @@ export default function Supplier() {
     if (margin >= 45) return 'text-green-600'
     if (margin >= 35) return 'text-yellow-600'
     return 'text-red-600'
+  }
+
+  const handleDeleteSupplier = async (supplier) => {
+    if (window.confirm(`Tem certeza que deseja remover o fornecedor "${supplier.name}"?`)) {
+      try {
+        await supplierApi.remove(supplier.id)
+        addToast('Fornecedor removido com sucesso!', 'success')
+        loadSuppliers()
+      } catch (error) {
+        addToast(getApiError(error, 'Não foi possível remover o fornecedor.'), 'error')
+      }
+    }
+  }
+
+  const handleDeleteQuotation = async (quotation) => {
+    if (window.confirm(`Tem certeza que deseja remover esta cotação?`)) {
+      try {
+        await quotationApi.remove(quotation.id)
+        addToast('Cotação removida com sucesso!', 'success')
+        loadQuotations()
+      } catch (error) {
+        addToast(getApiError(error, 'Não foi possível remover a cotação.'), 'error')
+      }
+    }
   }
 
   return (
@@ -136,7 +188,7 @@ export default function Supplier() {
                         <button onClick={() => openModal('editSupplier', supplier)} className="text-eden-primary hover:text-eden-light transition-colors mr-3">
                           <i className="fa-solid fa-edit"></i>
                         </button>
-                        <button onClick={async () => { await supplierApi.remove(supplier.id); loadSuppliers() }} className="text-red-600 hover:text-red-700 transition-colors">
+                        <button onClick={() => handleDeleteSupplier(supplier)} className="text-red-600 hover:text-red-700 transition-colors">
                           <i className="fa-solid fa-trash"></i>
                         </button>
                       </td>
@@ -196,7 +248,7 @@ export default function Supplier() {
                         <button onClick={() => openModal('editQuotation', quote)} className="text-eden-primary hover:text-eden-light transition-colors mr-3">
                           <i className="fa-solid fa-edit"></i>
                         </button>
-                        <button className="text-red-600 hover:text-red-700 transition-colors">
+                        <button onClick={() => handleDeleteQuotation(quote)} className="text-red-600 hover:text-red-700 transition-colors">
                           <i className="fa-solid fa-trash"></i>
                         </button>
                       </td>
