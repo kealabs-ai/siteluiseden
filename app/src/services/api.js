@@ -75,7 +75,8 @@ export const quotationApi = {
   list: () => api.get('/fornecedores/cotacoes'),
   create: (data) => api.post('/fornecedores/cotacoes', data),
   update: (data) => api.post('/fornecedores/cotacoes/update', data),
-  remove: (id) => api.post('/fornecedores/cotacoes/delete', { id })
+  remove: (id) => api.post('/fornecedores/cotacoes/delete', { id }),
+  approve: (id) => api.post('/fornecedores/cotacoes/approve', { id })
 }
 
 export const usersApi = {

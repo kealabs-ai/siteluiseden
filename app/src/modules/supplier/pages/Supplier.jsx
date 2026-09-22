@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useModal } from '../../../ModalContext'
 import { getApiError, quotationApi, supplierApi } from '../../../services/api'
 import { useToast } from '../../../ToastContext'
+import { generateQuotationTemplate } from '../../../utils/quotationTemplate'
 
 export default function Supplier() {
   const [activeTab, setActiveTab] = useState('suppliers')
@@ -43,7 +44,8 @@ export default function Supplier() {
         salePrice: q.precoVendaCents / 100,
         margin: q.precoCustoCents > 0 ? (((q.precoVendaCents - q.precoCustoCents) / q.precoCustoCents) * 100) : 0,
         date: q.createdAt,
-        status: q.ativo ? 'active' : 'inactive'
+        status: q.ativo ? 'active' : 'inactive',
+        approved: q.aprovada || false
       })))
     } catch (error) {
       addToast(getApiError(error, 'Não foi possível carregar as cotações.'), 'error')
@@ -103,6 +105,23 @@ export default function Supplier() {
         addToast(getApiError(error, 'Não foi possível remover a cotação.'), 'error')
       }
     }
+  }
+
+  const handleApproveQuotation = async (quotation) => {
+    if (window.confirm(`Deseja aprovar esta cotação e adicionar ao catálogo?`)) {
+      try {
+        await quotationApi.approve(quotation.id)
+        addToast('Cotação aprovada e adicionada ao catálogo!', 'success')
+        loadQuotations()
+      } catch (error) {
+        addToast(getApiError(error, 'Não foi possível aprovar a cotação.'), 'error')
+      }
+    }
+  }
+
+  const handleDownloadTemplate = (supplier) => {
+    generateQuotationTemplate(supplier.name)
+    addToast(`Template baixado para ${supplier.name}`, 'success')
   }
 
   return (
@@ -184,8 +203,11 @@ export default function Supplier() {
                           {getStatusLabel(supplier.status)}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-sm">
-                        <button onClick={() => openModal('editSupplier', supplier)} className="text-eden-primary hover:text-eden-light transition-colors mr-3">
+                      <td className="px-6 py-4 text-sm flex gap-2">
+                        <button onClick={() => handleDownloadTemplate(supplier)} className="text-purple-600 hover:text-purple-700 transition-colors" title="Baixar template">
+                          <i className="fa-solid fa-download"></i>
+                        </button>
+                        <button onClick={() => openModal('editSupplier', supplier)} className="text-eden-primary hover:text-eden-light transition-colors">
                           <i className="fa-solid fa-edit"></i>
                         </button>
                         <button onClick={() => handleDeleteSupplier(supplier)} className="text-red-600 hover:text-red-700 transition-colors">
@@ -222,7 +244,7 @@ export default function Supplier() {
                     <th className="px-6 py-3 text-right text-sm font-semibold text-stone-700">Preço Venda</th>
                     <th className="px-6 py-3 text-right text-sm font-semibold text-stone-700">Margem</th>
                     <th className="px-6 py-3 text-left text-sm font-semibold text-stone-700">Data</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-stone-700">Status</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-stone-700">Aprovação</th>
                     <th className="px-6 py-3 text-left text-sm font-semibold text-stone-700">Ações</th>
                   </tr>
                 </thead>
@@ -239,13 +261,18 @@ export default function Supplier() {
                       </td>
                       <td className="px-6 py-4 text-sm text-stone-600">{new Date(quote.date).toLocaleDateString('pt-BR')}</td>
                       <td className="px-6 py-4">
-                        <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(quote.status)}`}>
-                          <i className={`fa-solid ${quote.status === 'active' ? 'fa-check-circle' : 'fa-times-circle'}`}></i>
-                          {getStatusLabel(quote.status)}
+                        <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${quote.approved ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                          <i className={`fa-solid ${quote.approved ? 'fa-check-double' : 'fa-hourglass-end'}`}></i>
+                          {quote.approved ? 'Aprovada' : 'Pendente'}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-sm">
-                        <button onClick={() => openModal('editQuotation', quote)} className="text-eden-primary hover:text-eden-light transition-colors mr-3">
+                      <td className="px-6 py-4 text-sm flex gap-2">
+                        {!quote.approved && (
+                          <button onClick={() => handleApproveQuotation(quote)} className="text-blue-600 hover:text-blue-700 transition-colors" title="Aprovar cotação">
+                            <i className="fa-solid fa-check"></i>
+                          </button>
+                        )}
+                        <button onClick={() => openModal('editQuotation', quote)} className="text-eden-primary hover:text-eden-light transition-colors">
                           <i className="fa-solid fa-edit"></i>
                         </button>
                         <button onClick={() => handleDeleteQuotation(quote)} className="text-red-600 hover:text-red-700 transition-colors">
