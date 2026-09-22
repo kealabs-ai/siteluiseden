@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useToast } from '../ToastContext'
 import { getApiError, notifyDataChanged, supplierApi } from '../services/api'
+import { masks, unmask } from '../utils/inputMasks'
 
 export function NewSupplierModal({ isOpen, onClose }) {
   const { addToast } = useToast()
@@ -9,6 +10,7 @@ export function NewSupplierModal({ isOpen, onClose }) {
     contact: '',
     email: '',
     phone: '',
+    cpfCnpj: '',
     address: '',
     city: '',
     state: '',
@@ -17,9 +19,17 @@ export function NewSupplierModal({ isOpen, onClose }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target
+    let maskedValue = value
+
+    if (name === 'phone') {
+      maskedValue = masks.phone(value)
+    } else if (name === 'cpfCnpj') {
+      maskedValue = masks.cpfOrCnpj(value)
+    }
+
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: maskedValue
     }))
   }
 
@@ -31,11 +41,19 @@ export function NewSupplierModal({ isOpen, onClose }) {
       return
     }
 
+    // Validar email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(formData.email)) {
+      addToast('Email inválido', 'error')
+      return
+    }
+
     try {
       await supplierApi.create({
         nome: formData.name,
         email: formData.email,
         telefone: formData.phone,
+        cpfCnpj: unmask(formData.cpfCnpj),
         endereco: [formData.address, formData.city, formData.state].filter(Boolean).join(', ')
       })
       addToast(`Fornecedor "${formData.name}" cadastrado com sucesso!`, 'success')
@@ -49,6 +67,7 @@ export function NewSupplierModal({ isOpen, onClose }) {
       contact: '',
       email: '',
       phone: '',
+      cpfCnpj: '',
       address: '',
       city: '',
       state: '',
@@ -124,11 +143,12 @@ export function NewSupplierModal({ isOpen, onClose }) {
                   Telefone
                 </label>
                 <input
-                  type="tel"
+                  type="text"
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
                   placeholder="(11) 98765-4321"
+                  maxLength="15"
                   className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
                 />
               </div>
@@ -136,6 +156,21 @@ export function NewSupplierModal({ isOpen, onClose }) {
 
             {/* Right Column */}
             <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">
+                  CPF/CNPJ
+                </label>
+                <input
+                  type="text"
+                  name="cpfCnpj"
+                  value={formData.cpfCnpj}
+                  onChange={handleChange}
+                  placeholder="123.456.789-00 ou 12.345.678/0001-90"
+                  maxLength="18"
+                  className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
+                />
+              </div>
+
               <div>
                 <label className="block text-sm font-semibold text-stone-700 mb-2">
                   Endereço

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useToast } from '../ToastContext'
 import { getApiError, notifyDataChanged, quotationApi, supplierApi } from '../services/api'
+import { masks, currencyTocents, centsToCurrency } from '../utils/inputMasks'
 
 export function EditQuotationModal({ isOpen, onClose, quotation }) {
   const { addToast } = useToast()
@@ -8,7 +9,7 @@ export function EditQuotationModal({ isOpen, onClose, quotation }) {
   const [formData, setFormData] = useState({
     supplierId: '',
     description: '',
-    quantity: 1,
+    quantity: '',
     costPrice: '',
     salePrice: '',
     active: true
@@ -25,9 +26,9 @@ export function EditQuotationModal({ isOpen, onClose, quotation }) {
       setFormData({
         supplierId: quotation.fornecedorId || '',
         description: quotation.descricao || '',
-        quantity: quotation.quantidade || 1,
-        costPrice: (quotation.precoCustoCents / 100).toFixed(2),
-        salePrice: (quotation.precoVendaCents / 100).toFixed(2),
+        quantity: quotation.quantidade ? String(quotation.quantidade) : '',
+        costPrice: centsToCurrency(quotation.precoCustoCents),
+        salePrice: centsToCurrency(quotation.precoVendaCents),
         active: quotation.ativo !== false
       })
     }
@@ -44,10 +45,26 @@ export function EditQuotationModal({ isOpen, onClose, quotation }) {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target
+    let maskedValue = value
+
+    if (name === 'quantity') {
+      maskedValue = masks.quantity(value)
+    } else if (name === 'costPrice' || name === 'salePrice') {
+      maskedValue = masks.currency(value)
+    }
+
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : (name === 'quantity' ? parseInt(value) || 1 : value)
+      [name]: type === 'checkbox' ? checked : maskedValue
     }))
+  }
+
+  const calculateMargin = () => {
+    if (!formData.costPrice || !formData.salePrice) return 0
+    const cost = currencyTocents(formData.costPrice) / 100
+    const sale = currencyTocents(formData.salePrice) / 100
+    if (cost === 0) return 0
+    return (((sale - cost) / cost) * 100).toFixed(1)
   }
 
   const handleSubmit = async (e) => {
@@ -58,13 +75,18 @@ export function EditQuotationModal({ isOpen, onClose, quotation }) {
       return
     }
 
+    if (!formData.quantity || parseInt(formData.quantity) === 0) {
+      addToast('Quantidade deve ser maior que 0', 'error')
+      return
+    }
+
     try {
       await quotationApi.update({
         id: quotation.id,
         descricao: formData.description,
-        quantidade: formData.quantity,
-        precoCustoCents: Math.round(parseFloat(formData.costPrice) * 100),
-        precoVendaCents: Math.round(parseFloat(formData.salePrice) * 100),
+        quantidade: parseInt(formData.quantity),
+        precoCustoCents: currencyTocents(formData.costPrice),
+        precoVendaCents: currencyTocents(formData.salePrice),
         ativo: formData.active
       })
       addToast('Cotação atualizada com sucesso!', 'success')
@@ -76,6 +98,8 @@ export function EditQuotationModal({ isOpen, onClose, quotation }) {
   }
 
   if (!isOpen || !quotation) return null
+
+  const margin = calculateMargin()
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
@@ -129,11 +153,11 @@ export function EditQuotationModal({ isOpen, onClose, quotation }) {
                   Quantidade *
                 </label>
                 <input
-                  type="number"
+                  type="text"
                   name="quantity"
                   value={formData.quantity}
                   onChange={handleChange}
-                  min="1"
+                  placeholder="0"
                   className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
                 />
               </div>
@@ -145,12 +169,11 @@ export function EditQuotationModal({ isOpen, onClose, quotation }) {
                   Preço de Custo (R$) *
                 </label>
                 <input
-                  type="number"
+                  type="text"
                   name="costPrice"
                   value={formData.costPrice}
                   onChange={handleChange}
-                  step="0.01"
-                  min="0"
+                  placeholder="0,00"
                   className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
                 />
               </div>
@@ -160,21 +183,20 @@ export function EditQuotationModal({ isOpen, onClose, quotation }) {
                   Preço de Venda (R$) *
                 </label>
                 <input
-                  type="number"
+                  type="text"
                   name="salePrice"
                   value={formData.salePrice}
                   onChange={handleChange}
-                  step="0.01"
-                  min="0"
+                  placeholder="0,00"
                   className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
                 />
               </div>
 
               {formData.costPrice && formData.salePrice && (
-                <div className="bg-eden-primary/10 p-4 rounded-lg">
-                  <p className="text-sm text-stone-600">Margem de Lucro:</p>
-                  <p className="text-2xl font-bold text-eden-primary">
-                    {(((parseFloat(formData.salePrice) - parseFloat(formData.costPrice)) / parseFloat(formData.costPrice)) * 100).toFixed(1)}%
+                <div className="bg-eden-primary/10 p-4 rounded-lg border-2 border-eden-primary/20">
+                  <p className="text-sm text-stone-600 mb-1">Margem de Lucro:</p>
+                  <p className={`text-3xl font-bold ${margin >= 35 ? 'text-green-600' : margin >= 20 ? 'text-yellow-600' : 'text-red-600'}`}>
+                    {margin}%
                   </p>
                 </div>
               )}
