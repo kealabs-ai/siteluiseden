@@ -121,13 +121,11 @@ export function EditPlantModal({ isOpen, onClose, plantData = {} }) {
                     Custo (R$) *
                   </label>
                   <input
-                    type="number"
+                    type="text"
                     name="cost"
                     value={formData.cost}
                     onChange={handleChange}
-                    placeholder="0.00"
-                    step="0.01"
-                    min="0"
+                    placeholder="0,00"
                     className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
                   />
                 </div>
@@ -136,13 +134,11 @@ export function EditPlantModal({ isOpen, onClose, plantData = {} }) {
                     Preço Venda (R$) *
                   </label>
                   <input
-                    type="number"
+                    type="text"
                     name="salePrice"
                     value={formData.salePrice}
                     onChange={handleChange}
-                    placeholder="0.00"
-                    step="0.01"
-                    min="0"
+                    placeholder="0,00"
                     className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
                   />
                 </div>
