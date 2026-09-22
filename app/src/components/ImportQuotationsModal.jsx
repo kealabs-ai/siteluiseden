@@ -3,6 +3,7 @@ import { useToast } from '../ToastContext'
 import { getApiError, notifyDataChanged, quotationApi, supplierApi } from '../services/api'
 import { DragDropFileInput } from './DragDropFileInput'
 import { downloadSampleFile } from '../utils/sampleFiles'
+import * as XLSX from 'xlsx'
 
 export function ImportQuotationsModal({ isOpen, onClose }) {
   const { addToast } = useToast()
@@ -32,11 +33,10 @@ export function ImportQuotationsModal({ isOpen, onClose }) {
       reader.onload = (e) => {
         try {
           let rows = []
-          const data = e.target.result
-
-          // Detectar tipo de arquivo
+          
           if (fileName.endsWith('.csv')) {
             // Processar CSV
+            const data = e.target.result
             const lines = data.split('\n')
             for (let i = 1; i < lines.length; i++) {
               const line = lines[i].trim()
@@ -53,22 +53,32 @@ export function ImportQuotationsModal({ isOpen, onClose }) {
                 })
               }
             }
-          } else if (fileName.endsWith('.xls') || fileName.endsWith('.xlsx')) {
-            // Processar XLS/XLSX como texto (tab-separated)
-            const lines = data.split('\n')
-            for (let i = 1; i < lines.length; i++) {
-              const line = lines[i].trim()
-              if (!line) continue
-
-              const cells = line.split('\t').map(cell => cell.trim())
-              if (cells.length >= 4 && cells[0]) {
-                rows.push({
-                  fornecedor: cells[0],
-                  produto: cells[1],
-                  quantidade: parseInt(cells[2]) || 0,
-                  precoCusto: parseFloat(cells[3].replace(',', '.')) || 0
-                })
-              }
+          } else if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+            // Processar XLSX/XLS com biblioteca xlsx
+            const data = e.target.result
+            const workbook = XLSX.read(data, { type: 'binary' })
+            
+            // Pegar primeira planilha
+            const sheetName = workbook.SheetNames[0]
+            if (!sheetName) {
+              reject(new Error('Nenhuma planilha encontrada no arquivo'))
+              return
+            }
+            
+            const worksheet = workbook.Sheets[sheetName]
+            const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 })
+            
+            // Processar dados
+            for (let i = 1; i < jsonData.length; i++) {
+              const row = jsonData[i]
+              if (!row || !row[0]) continue
+              
+              rows.push({
+                fornecedor: String(row[0] || '').trim(),
+                produto: String(row[1] || '').trim(),
+                quantidade: parseInt(row[2]) || 0,
+                precoCusto: parseFloat(String(row[3] || '0').replace(',', '.')) || 0
+              })
             }
           }
 
@@ -83,7 +93,12 @@ export function ImportQuotationsModal({ isOpen, onClose }) {
       }
 
       reader.onerror = () => reject(new Error('Erro ao ler arquivo'))
-      reader.readAsText(file)
+      
+      if (fileName.endsWith('.csv')) {
+        reader.readAsText(file)
+      } else {
+        reader.readAsBinaryString(file)
+      }
     })
   }
 
@@ -266,7 +281,7 @@ export function ImportQuotationsModal({ isOpen, onClose }) {
                 <li><strong>Preço Custo</strong> - Valor em R$ (ex: 10,50 ou 10.50)</li>
               </ul>
               <p className="pt-1">✓ CSV: use vírgula ou ponto-e-vírgula como separador</p>
-              <p>✓ XLS/XLSX: copie e cole como texto (tab-separated)</p>
+              <p>✓ XLSX/XLS: primeira linha deve ser o cabeçalho</p>
             </div>
             
             {/* Download Sample Files */}
