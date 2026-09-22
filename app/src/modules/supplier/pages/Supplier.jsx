@@ -119,9 +119,9 @@ export default function Supplier() {
     }
   }
 
-  const handleDownloadTemplate = (supplier) => {
-    generateQuotationTemplate(supplier.name)
-    addToast(`Template baixado para ${supplier.name}`, 'success')
+  const handleDownloadTemplate = () => {
+    generateQuotationTemplate('Cotacoes')
+    addToast('Template baixado com sucesso!', 'success')
   }
 
   return (
@@ -184,8 +184,6 @@ export default function Supplier() {
                     <th className="px-6 py-3 text-left text-sm font-semibold text-stone-700">Contato</th>
                     <th className="px-6 py-3 text-left text-sm font-semibold text-stone-700">Email</th>
                     <th className="px-6 py-3 text-left text-sm font-semibold text-stone-700">Telefone</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-stone-700">Último Pedido</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-stone-700">Status</th>
                     <th className="px-6 py-3 text-left text-sm font-semibold text-stone-700">Ações</th>
                   </tr>
                 </thead>
@@ -196,21 +194,11 @@ export default function Supplier() {
                       <td className="px-6 py-4 text-sm text-stone-600">{supplier.contact}</td>
                       <td className="px-6 py-4 text-sm text-stone-600">{supplier.email}</td>
                       <td className="px-6 py-4 text-sm text-stone-600">{supplier.phone}</td>
-                      <td className="px-6 py-4 text-sm text-stone-600">{new Date(supplier.lastOrder).toLocaleDateString('pt-BR')}</td>
-                      <td className="px-6 py-4">
-                        <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(supplier.status)}`}>
-                          <i className={`fa-solid ${supplier.status === 'active' ? 'fa-check-circle' : 'fa-times-circle'}`}></i>
-                          {getStatusLabel(supplier.status)}
-                        </span>
-                      </td>
                       <td className="px-6 py-4 text-sm flex gap-2">
-                        <button onClick={() => handleDownloadTemplate(supplier)} className="text-purple-600 hover:text-purple-700 transition-colors" title="Baixar template">
-                          <i className="fa-solid fa-download"></i>
-                        </button>
-                        <button onClick={() => openModal('editSupplier', supplier)} className="text-eden-primary hover:text-eden-light transition-colors">
+                        <button onClick={() => openModal('editSupplier', supplier)} className="text-eden-primary hover:text-eden-light transition-colors" title="Editar">
                           <i className="fa-solid fa-edit"></i>
                         </button>
-                        <button onClick={() => handleDeleteSupplier(supplier)} className="text-red-600 hover:text-red-700 transition-colors">
+                        <button onClick={() => handleDeleteSupplier(supplier)} className="text-red-600 hover:text-red-700 transition-colors" title="Deletar">
                           <i className="fa-solid fa-trash"></i>
                         </button>
                       </td>
@@ -227,10 +215,20 @@ export default function Supplier() {
           <div className="bg-white rounded-xl border border-stone-200 overflow-hidden">
             <div className="p-6 border-b border-stone-200 flex items-center justify-between">
               <h2 className="text-lg font-bold text-eden-primary">Cotações de Preços</h2>
-              <button onClick={() => openModal('newQuotation')} className="px-4 py-2 bg-eden-primary text-white rounded-lg hover:bg-eden-light transition-colors text-sm font-medium">
-                <i className="fa-solid fa-plus mr-2"></i>
-                Nova Cotação
-              </button>
+              <div className="flex gap-3">
+                <button onClick={handleDownloadTemplate} className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors text-sm font-medium flex items-center gap-2" title="Baixar template de cotações">
+                  <i className="fa-solid fa-download"></i>
+                  Template
+                </button>
+                <button onClick={() => openModal('importExcel')} className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium flex items-center gap-2">
+                  <i className="fa-solid fa-file-excel"></i>
+                  Importar Excel
+                </button>
+                <button onClick={() => openModal('newQuotation')} className="px-4 py-2 bg-eden-primary text-white rounded-lg hover:bg-eden-light transition-colors text-sm font-medium">
+                  <i className="fa-solid fa-plus mr-2"></i>
+                  Nova Cotação
+                </button>
+              </div>
             </div>
 
             <div className="overflow-x-auto">
@@ -241,10 +239,6 @@ export default function Supplier() {
                     <th className="px-6 py-3 text-left text-sm font-semibold text-stone-700">Produto</th>
                     <th className="px-6 py-3 text-left text-sm font-semibold text-stone-700">Quantidade</th>
                     <th className="px-6 py-3 text-right text-sm font-semibold text-stone-700">Preço Custo</th>
-                    <th className="px-6 py-3 text-right text-sm font-semibold text-stone-700">Preço Venda</th>
-                    <th className="px-6 py-3 text-right text-sm font-semibold text-stone-700">Margem</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-stone-700">Data</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-stone-700">Aprovação</th>
                     <th className="px-6 py-3 text-left text-sm font-semibold text-stone-700">Ações</th>
                   </tr>
                 </thead>
@@ -255,27 +249,16 @@ export default function Supplier() {
                       <td className="px-6 py-4 text-sm text-stone-600">{quote.product}</td>
                       <td className="px-6 py-4 text-sm text-stone-600">{quote.quantity}</td>
                       <td className="px-6 py-4 text-sm text-stone-600 text-right">R$ {quote.costPrice.toFixed(2)}</td>
-                      <td className="px-6 py-4 text-sm font-semibold text-eden-primary text-right">R$ {quote.salePrice.toFixed(2)}</td>
-                      <td className={`px-6 py-4 text-sm font-bold text-right ${getMarginColor(quote.margin)}`}>
-                        {quote.margin.toFixed(1)}%
-                      </td>
-                      <td className="px-6 py-4 text-sm text-stone-600">{new Date(quote.date).toLocaleDateString('pt-BR')}</td>
-                      <td className="px-6 py-4">
-                        <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${quote.approved ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                          <i className={`fa-solid ${quote.approved ? 'fa-check-double' : 'fa-hourglass-end'}`}></i>
-                          {quote.approved ? 'Aprovada' : 'Pendente'}
-                        </span>
-                      </td>
                       <td className="px-6 py-4 text-sm flex gap-2">
                         {!quote.approved && (
                           <button onClick={() => handleApproveQuotation(quote)} className="text-blue-600 hover:text-blue-700 transition-colors" title="Aprovar cotação">
                             <i className="fa-solid fa-check"></i>
                           </button>
                         )}
-                        <button onClick={() => openModal('editQuotation', quote)} className="text-eden-primary hover:text-eden-light transition-colors">
+                        <button onClick={() => openModal('editQuotation', quote)} className="text-eden-primary hover:text-eden-light transition-colors" title="Editar">
                           <i className="fa-solid fa-edit"></i>
                         </button>
-                        <button onClick={() => handleDeleteQuotation(quote)} className="text-red-600 hover:text-red-700 transition-colors">
+                        <button onClick={() => handleDeleteQuotation(quote)} className="text-red-600 hover:text-red-700 transition-colors" title="Deletar">
                           <i className="fa-solid fa-trash"></i>
                         </button>
                       </td>
