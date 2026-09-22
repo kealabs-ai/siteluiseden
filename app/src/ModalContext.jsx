@@ -16,13 +16,24 @@ export function ModalProvider({ children }) {
     viewSaleDetails: false,
     viewBudgetDetails: false,
     importExcel: false,
+    importQuotations: false,
     newSupplier: false,
     editSupplier: false,
     newQuotation: false,
-    editQuotation: false
+    editQuotation: false,
+    confirmation: false
   })
 
   const [modalData, setModalData] = useState({})
+  const [confirmationData, setConfirmationData] = useState({
+    title: '',
+    message: '',
+    onConfirm: () => {},
+    onCancel: () => {},
+    confirmText: 'Confirmar',
+    cancelText: 'Cancelar',
+    isDangerous: false
+  })
 
   const openModal = (modalName, data = {}) => {
     setModals(prev => ({ ...prev, [modalName]: true }))
@@ -34,8 +45,31 @@ export function ModalProvider({ children }) {
     setModalData(prev => ({ ...prev, [modalName]: {} }))
   }
 
+  const openConfirmation = (title, message, onConfirm, onCancel, options = {}) => {
+    setConfirmationData({
+      title,
+      message,
+      onConfirm: () => {
+        onConfirm()
+        closeConfirmation()
+      },
+      onCancel: () => {
+        onCancel?.()
+        closeConfirmation()
+      },
+      confirmText: options.confirmText || 'Confirmar',
+      cancelText: options.cancelText || 'Cancelar',
+      isDangerous: options.isDangerous || false
+    })
+    setModals(prev => ({ ...prev, confirmation: true }))
+  }
+
+  const closeConfirmation = () => {
+    setModals(prev => ({ ...prev, confirmation: false }))
+  }
+
   return (
-    <ModalContext.Provider value={{ modals, modalData, openModal, closeModal }}>
+    <ModalContext.Provider value={{ modals, modalData, openModal, closeModal, confirmationData, openConfirmation, closeConfirmation }}>
       {children}
     </ModalContext.Provider>
   )

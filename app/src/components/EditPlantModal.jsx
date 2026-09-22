@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useToast } from '../ToastContext'
 import { catalogApi, getApiError, notifyDataChanged } from '../services/api'
+import { masks, currencyTocents } from '../utils/inputMasks'
 
 export function EditPlantModal({ isOpen, onClose, plantData = {} }) {
   const { addToast } = useToast()
@@ -30,9 +31,15 @@ export function EditPlantModal({ isOpen, onClose, plantData = {} }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target
+    let maskedValue = value
+
+    if (name === 'cost' || name === 'salePrice') {
+      maskedValue = masks.currency(value)
+    }
+
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: maskedValue
     }))
   }
 
@@ -45,7 +52,7 @@ export function EditPlantModal({ isOpen, onClose, plantData = {} }) {
     }
 
     try {
-      await catalogApi.update({ id: plantData.id, nome: formData.name, categoria: formData.supplier, custoCents: Math.round(cost * 100), precoCents: Math.round(salePrice * 100), estoque: Number(formData.stock) })
+      await catalogApi.update({ id: plantData.id, nome: formData.name, categoria: formData.supplier, custoCents: currencyTocents(formData.cost), precoCents: currencyTocents(formData.salePrice), estoque: Number(formData.stock) })
       addToast(`Planta "${formData.name}" atualizada com sucesso!`, 'success')
       notifyDataChanged('catalogo')
     } catch (error) {
@@ -57,8 +64,8 @@ export function EditPlantModal({ isOpen, onClose, plantData = {} }) {
 
   if (!isOpen) return null
 
-  const cost = parseFloat(formData.cost) || 0
-  const salePrice = parseFloat(formData.salePrice) || 0
+  const cost = currencyTocents(formData.cost) / 100
+  const salePrice = currencyTocents(formData.salePrice) / 100
   const markup = cost > 0 ? ((salePrice - cost) / cost * 100).toFixed(1) : 0
   const margin = salePrice > 0 ? ((salePrice - cost) / salePrice * 100).toFixed(1) : 0
 

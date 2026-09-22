@@ -9,6 +9,7 @@ export default function Sales() {
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const { addToast } = useToast()
+  const { openConfirmation } = useModal()
 
   const loadSales = async () => {
     try {
@@ -60,14 +61,22 @@ export default function Sales() {
   const completedSales = filteredSales.filter(s => s.status === 'completed').length
 
   const handleCancel = async (sale) => {
-    if (sale.status === 'cancelled' || !window.confirm('Deseja cancelar esta venda e devolver os itens ao estoque?')) return
-    try {
-      await salesApi.cancel(sale.id, 'Cancelamento solicitado na tela de vendas')
-      addToast('Venda cancelada e estoque restaurado.', 'success')
-      loadSales()
-    } catch (error) {
-      addToast(getApiError(error, 'Não foi possível cancelar a venda.'), 'error')
-    }
+    if (sale.status === 'cancelled') return
+    openConfirmation(
+      'Cancelar Venda',
+      'Deseja cancelar esta venda e devolver os itens ao estoque?',
+      async () => {
+        try {
+          await salesApi.cancel(sale.id, 'Cancelamento solicitado na tela de vendas')
+          addToast('Venda cancelada e estoque restaurado.', 'success')
+          loadSales()
+        } catch (error) {
+          addToast(getApiError(error, 'Não foi possível cancelar a venda.'), 'error')
+        }
+      },
+      () => {},
+      { confirmText: 'Cancelar Venda', cancelText: 'Manter', isDangerous: true }
+    )
   }
 
   return (

@@ -1,4 +1,4 @@
-// Função para gerar template XLSX com sheets separadas
+// Função para gerar template XLSX apenas com Cotacao
 export const generateQuotationTemplate = (supplierName = 'Fornecedor') => {
   const html = `
     <html xmlns:x="urn:schemas-microsoft-com:office:excel">
@@ -13,26 +13,6 @@ export const generateQuotationTemplate = (supplierName = 'Fornecedor') => {
     </head>
     <body>
       <x:ExcelWorkbook>
-        <x:ExcelWorksheet x:Name="Fornecedor">
-          <table>
-            <tr>
-              <th>Fornecedor</th>
-              <th>Contato</th>
-              <th>Email</th>
-              <th>Telefone</th>
-            </tr>
-            <tr><td></td><td></td><td></td><td></td></tr>
-            <tr><td></td><td></td><td></td><td></td></tr>
-            <tr><td></td><td></td><td></td><td></td></tr>
-            <tr><td></td><td></td><td></td><td></td></tr>
-            <tr><td></td><td></td><td></td><td></td></tr>
-            <tr><td></td><td></td><td></td><td></td></tr>
-            <tr><td></td><td></td><td></td><td></td></tr>
-            <tr><td></td><td></td><td></td><td></td></tr>
-            <tr><td></td><td></td><td></td><td></td></tr>
-            <tr><td></td><td></td><td></td><td></td></tr>
-          </table>
-        </x:ExcelWorksheet>
         <x:ExcelWorksheet x:Name="Cotacao">
           <table>
             <tr>
@@ -64,7 +44,7 @@ export const generateQuotationTemplate = (supplierName = 'Fornecedor') => {
   const url = URL.createObjectURL(blob)
   
   link.setAttribute('href', url)
-  link.setAttribute('download', `template_fornecedores_cotacoes_${new Date().getTime()}.xls`)
+  link.setAttribute('download', `template_cotacoes_${new Date().getTime()}.xls`)
   link.style.visibility = 'hidden'
   
   document.body.appendChild(link)

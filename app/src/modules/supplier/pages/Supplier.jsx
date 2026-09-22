@@ -165,10 +165,6 @@ export default function Supplier() {
             <div className="p-6 border-b border-stone-200 flex items-center justify-between">
               <h2 className="text-lg font-bold text-eden-primary">Lista de Fornecedores</h2>
               <div className="flex gap-3">
-                <button onClick={() => openModal('importExcel')} className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium flex items-center gap-2">
-                  <i className="fa-solid fa-file-excel"></i>
-                  Importar Excel
-                </button>
                 <button onClick={() => openModal('newSupplier')} className="px-4 py-2 bg-eden-primary text-white rounded-lg hover:bg-eden-light transition-colors text-sm font-medium">
                   <i className="fa-solid fa-plus mr-2"></i>
                   Novo Fornecedor
@@ -220,9 +216,9 @@ export default function Supplier() {
                   <i className="fa-solid fa-download"></i>
                   Template
                 </button>
-                <button onClick={() => openModal('importExcel')} className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium flex items-center gap-2">
+                <button onClick={() => openModal('importQuotations')} className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium flex items-center gap-2">
                   <i className="fa-solid fa-file-excel"></i>
-                  Importar Excel
+                  Importar
                 </button>
                 <button onClick={() => openModal('newQuotation')} className="px-4 py-2 bg-eden-primary text-white rounded-lg hover:bg-eden-light transition-colors text-sm font-medium">
                   <i className="fa-solid fa-plus mr-2"></i>
