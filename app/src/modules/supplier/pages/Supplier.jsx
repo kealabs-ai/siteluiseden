@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useModal } from '../../../ModalContext'
-import { getApiError, quotationApi, supplierApi } from '../../../services/api'
+import { getApiError, quotationApi, supplierApi, notifyDataChanged } from '../../../services/api'
 import { useToast } from '../../../ToastContext'
 import { generateQuotationTemplate } from '../../../utils/quotationTemplate'
 
@@ -126,8 +126,11 @@ export default function Supplier() {
       async () => {
         try {
           await quotationApi.approve(quotation.id)
-          addToast('Cotação aprovada e adicionada ao catálogo!', 'success')
+          addToast('Cotação aprovada! Produto adicionado ao catálogo.', 'success')
+          // Recarregar cotações
           loadQuotations()
+          // Notificar que o catálogo foi alterado
+          notifyDataChanged('catalogo')
         } catch (error) {
           addToast(getApiError(error, 'Não foi possível aprovar a cotação.'), 'error')
         }
@@ -230,10 +233,6 @@ export default function Supplier() {
             <div className="p-6 border-b border-stone-200 flex items-center justify-between">
               <h2 className="text-lg font-bold text-eden-primary">Cotações de Preços</h2>
               <div className="flex gap-3">
-                <button onClick={handleDownloadTemplate} className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors text-sm font-medium flex items-center gap-2" title="Baixar template de cotações">
-                  <i className="fa-solid fa-download"></i>
-                  Template
-                </button>
                 <button onClick={() => openModal('importQuotations')} className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium flex items-center gap-2">
                   <i className="fa-solid fa-file-excel"></i>
                   Importar
@@ -253,6 +252,7 @@ export default function Supplier() {
                     <th className="px-6 py-3 text-left text-sm font-semibold text-stone-700">Produto</th>
                     <th className="px-6 py-3 text-left text-sm font-semibold text-stone-700">Quantidade</th>
                     <th className="px-6 py-3 text-right text-sm font-semibold text-stone-700">Preço Custo</th>
+                    <th className="px-6 py-3 text-center text-sm font-semibold text-stone-700">Status</th>
                     <th className="px-6 py-3 text-left text-sm font-semibold text-stone-700">Ações</th>
                   </tr>
                 </thead>
@@ -263,6 +263,19 @@ export default function Supplier() {
                       <td className="px-6 py-4 text-sm text-stone-600">{quote.product}</td>
                       <td className="px-6 py-4 text-sm text-stone-600">{quote.quantity}</td>
                       <td className="px-6 py-4 text-sm text-stone-600 text-right">R$ {quote.costPrice.toFixed(2)}</td>
+                      <td className="px-6 py-4 text-sm text-center">
+                        {quote.approved ? (
+                          <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">
+                            <i className="fa-solid fa-check-circle"></i>
+                            Aprovada
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-semibold">
+                            <i className="fa-solid fa-clock"></i>
+                            Pendente
+                          </span>
+                        )}
+                      </td>
                       <td className="px-6 py-4 text-sm flex gap-2">
                         {!quote.approved && (
                           <button onClick={() => handleApproveQuotation(quote)} className="text-blue-600 hover:text-blue-700 transition-colors" title="Aprovar cotação">
