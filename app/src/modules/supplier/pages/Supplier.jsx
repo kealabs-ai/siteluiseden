@@ -6,7 +6,7 @@ import { generateQuotationTemplate } from '../../../utils/quotationTemplate'
 
 export default function Supplier() {
   const [activeTab, setActiveTab] = useState('suppliers')
-  const { openModal } = useModal()
+  const { openModal, openConfirmation } = useModal()
 
   const [suppliers, setSuppliers] = useState([])
   const [quotations, setQuotations] = useState([])
@@ -84,39 +84,57 @@ export default function Supplier() {
   }
 
   const handleDeleteSupplier = async (supplier) => {
-    if (window.confirm(`Tem certeza que deseja remover o fornecedor "${supplier.name}"?`)) {
-      try {
-        await supplierApi.remove(supplier.id)
-        addToast('Fornecedor removido com sucesso!', 'success')
-        loadSuppliers()
-      } catch (error) {
-        addToast(getApiError(error, 'Não foi possível remover o fornecedor.'), 'error')
-      }
-    }
+    openConfirmation(
+      'Deletar Fornecedor',
+      `Tem certeza que deseja remover o fornecedor "${supplier.name}"? Esta ação não pode ser desfeita.`,
+      async () => {
+        try {
+          await supplierApi.remove(supplier.id)
+          addToast('Fornecedor removido com sucesso!', 'success')
+          loadSuppliers()
+        } catch (error) {
+          addToast(getApiError(error, 'Não foi possível remover o fornecedor.'), 'error')
+        }
+      },
+      () => {},
+      { confirmText: 'Deletar', cancelText: 'Cancelar', isDangerous: true }
+    )
   }
 
   const handleDeleteQuotation = async (quotation) => {
-    if (window.confirm(`Tem certeza que deseja remover esta cotação?`)) {
-      try {
-        await quotationApi.remove(quotation.id)
-        addToast('Cotação removida com sucesso!', 'success')
-        loadQuotations()
-      } catch (error) {
-        addToast(getApiError(error, 'Não foi possível remover a cotação.'), 'error')
-      }
-    }
+    openConfirmation(
+      'Deletar Cotação',
+      `Tem certeza que deseja remover esta cotação de "${quotation.product}"? Esta ação não pode ser desfeita.`,
+      async () => {
+        try {
+          await quotationApi.remove(quotation.id)
+          addToast('Cotação removida com sucesso!', 'success')
+          loadQuotations()
+        } catch (error) {
+          addToast(getApiError(error, 'Não foi possível remover a cotação.'), 'error')
+        }
+      },
+      () => {},
+      { confirmText: 'Deletar', cancelText: 'Cancelar', isDangerous: true }
+    )
   }
 
   const handleApproveQuotation = async (quotation) => {
-    if (window.confirm(`Deseja aprovar esta cotação e adicionar ao catálogo?`)) {
-      try {
-        await quotationApi.approve(quotation.id)
-        addToast('Cotação aprovada e adicionada ao catálogo!', 'success')
-        loadQuotations()
-      } catch (error) {
-        addToast(getApiError(error, 'Não foi possível aprovar a cotação.'), 'error')
-      }
-    }
+    openConfirmation(
+      'Aprovar Cotação',
+      `Deseja aprovar esta cotação e adicionar "${quotation.product}" ao catálogo?`,
+      async () => {
+        try {
+          await quotationApi.approve(quotation.id)
+          addToast('Cotação aprovada e adicionada ao catálogo!', 'success')
+          loadQuotations()
+        } catch (error) {
+          addToast(getApiError(error, 'Não foi possível aprovar a cotação.'), 'error')
+        }
+      },
+      () => {},
+      { confirmText: 'Aprovar', cancelText: 'Cancelar', isDangerous: false }
+    )
   }
 
   const handleDownloadTemplate = () => {

@@ -6,6 +6,7 @@ import { useToast } from '../../../ToastContext'
 export default function MaintenanceSchedule() {
   const [schedules, setSchedules] = useState([])
   const { addToast } = useToast()
+  const { openModal, openConfirmation } = useModal()
 
   const loadSchedules = async () => {
     try {
@@ -27,8 +28,6 @@ export default function MaintenanceSchedule() {
     window.addEventListener('eden:data-changed', loadSchedules)
     return () => window.removeEventListener('eden:data-changed', loadSchedules)
   }, [])
-
-  const { openModal } = useModal()
 
   const getStatusColor = (status) => {
     switch(status) {
@@ -64,6 +63,24 @@ export default function MaintenanceSchedule() {
       case 'low': return 'Baixa'
       default: return 'Desconhecida'
     }
+  }
+
+  const handleDeleteMaintenance = (schedule) => {
+    openConfirmation(
+      'Deletar Manutenção',
+      `Tem certeza que deseja remover o agendamento de manutenção para "${schedule.client}"? Esta ação não pode ser desfeita.`,
+      async () => {
+        try {
+          await maintenanceApi.remove(schedule.id)
+          addToast('Manutenção removida com sucesso!', 'success')
+          loadSchedules()
+        } catch (error) {
+          addToast(getApiError(error, 'Não foi possível remover a manutenção.'), 'error')
+        }
+      },
+      () => {},
+      { confirmText: 'Deletar', cancelText: 'Cancelar', isDangerous: true }
+    )
   }
 
   const scheduledCount = schedules.filter(s => s.status === 'scheduled').length
@@ -168,7 +185,7 @@ export default function MaintenanceSchedule() {
                       <button onClick={() => openModal('editMaintenance', schedule)} className="text-eden-primary hover:text-eden-light transition-colors mr-3">
                         <i className="fa-solid fa-edit"></i>
                       </button>
-                      <button className="text-red-600 hover:text-red-700 transition-colors">
+                      <button onClick={() => handleDeleteMaintenance(schedule)} className="text-red-600 hover:text-red-700 transition-colors">
                         <i className="fa-solid fa-trash"></i>
                       </button>
                     </td>
