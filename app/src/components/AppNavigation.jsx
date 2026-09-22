@@ -18,6 +18,8 @@ import { NewSupplierModal } from './NewSupplierModal'
 import { EditSupplierModal } from './EditSupplierModal'
 import { NewQuotationModal } from './NewQuotationModal'
 import { EditQuotationModal } from './EditQuotationModal'
+import { NewClientModal } from './NewClientModal'
+import { EditClientModal } from './EditClientModal'
 import { ConfirmationModal } from './ConfirmationModal'
 import { catalogApi } from '../services/api'
 
@@ -244,6 +246,7 @@ function AppNavigation({ onLogout }) {
       <BudgetBuilderModal 
         isOpen={modals.budgetBuilder} 
         onClose={() => closeModal('budgetBuilder')}
+        flowers={flowers}
       />
       <ViewSaleDetailsModal 
         isOpen={modals.viewSaleDetails} 
@@ -300,6 +303,15 @@ function AppNavigation({ onLogout }) {
         isOpen={modals.editQuotation} 
         onClose={() => closeModal('editQuotation')}
         quotation={modalData.editQuotation}
+      />
+      <NewClientModal 
+        isOpen={modals.newClient} 
+        onClose={() => closeModal('newClient')}
+      />
+      <EditClientModal 
+        isOpen={modals.editClient} 
+        onClose={() => closeModal('editClient')}
+        clientData={modalData.editClient}
       />
       <ConfirmationModal
         isOpen={modals.confirmation}

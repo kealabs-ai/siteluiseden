@@ -1,0 +1,225 @@
+/* Clients Page Styles */
+.clients-container {
+  min-height: 100vh;
+  background-color: #fafaf8;
+}
+
+.clients-header {
+  margin-bottom: 2rem;
+}
+
+.clients-title {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #2d5016;
+  font-family: 'Playfair Display', serif;
+}
+
+.clients-subtitle {
+  color: #78716c;
+  margin-top: 0.25rem;
+}
+
+.kpi-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.kpi-card {
+  background: white;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  border: 1px solid #e7e5e4;
+}
+
+.kpi-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.kpi-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #78716c;
+}
+
+.kpi-icon {
+  font-size: 1.5rem;
+}
+
+.kpi-value {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #2d5016;
+}
+
+.kpi-description {
+  font-size: 0.75rem;
+  color: #a8a29e;
+  margin-top: 0.5rem;
+}
+
+.birthdays-section {
+  background: linear-gradient(to right, #fce7f3, #fdf2f8);
+  border-radius: 0.75rem;
+  border: 2px solid #fbcfe8;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.birthdays-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #831843;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.birthdays-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.birthday-card {
+  background: white;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  border: 1px solid #fbcfe8;
+}
+
+.birthday-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.birthday-name {
+  font-weight: 600;
+  color: #292524;
+}
+
+.birthday-date {
+  font-size: 0.875rem;
+  color: #78716c;
+}
+
+.clients-table-container {
+  background: white;
+  border-radius: 0.75rem;
+  border: 1px solid #e7e5e4;
+  overflow: hidden;
+}
+
+.clients-table-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid #e7e5e4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.clients-table-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #2d5016;
+}
+
+.add-client-btn {
+  padding: 0.5rem 1rem;
+  background-color: #2d5016;
+  color: white;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.add-client-btn:hover {
+  background-color: #4a7c2c;
+}
+
+.clients-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.clients-table thead {
+  background-color: #fafaf8;
+  border-bottom: 1px solid #e7e5e4;
+}
+
+.clients-table th {
+  padding: 1rem 1.5rem;
+  text-align: left;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #57534e;
+}
+
+.clients-table tbody tr {
+  border-bottom: 1px solid #e7e5e4;
+  transition: background-color 0.2s;
+}
+
+.clients-table tbody tr:hover {
+  background-color: #fafaf8;
+}
+
+.clients-table td {
+  padding: 1rem 1.5rem;
+  font-size: 0.875rem;
+  color: #78716c;
+}
+
+.clients-table td strong {
+  color: #292524;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.action-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: color 0.2s;
+}
+
+.edit-btn {
+  color: #2d5016;
+}
+
+.edit-btn:hover {
+  color: #4a7c2c;
+}
+
+.delete-btn {
+  color: #dc2626;
+}
+
+.delete-btn:hover {
+  color: #b91c1c;
+}
+
+.empty-state {
+  padding: 2rem;
+  text-align: center;
+  color: #78716c;
+}
+
+.loading-state {
+  padding: 2rem;
+  color: #78716c;
+}

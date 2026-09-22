@@ -16,7 +16,8 @@ export default function MaintenanceSchedule() {
         client: schedule.titulo,
         service: schedule.descricao || 'Manutenção',
         date: schedule.dataAgendada,
-        status: schedule.status === 'agendada' ? 'scheduled' : schedule.status
+        priority: schedule.prioridade || 'normal',
+        status: schedule.status === 'agendada' ? 'scheduled' : schedule.status === 'em_progresso' ? 'in_progress' : schedule.status === 'concluida' ? 'completed' : schedule.status
       })))
     } catch (error) {
       addToast(getApiError(error, 'Não foi possível carregar as manutenções.'), 'error')

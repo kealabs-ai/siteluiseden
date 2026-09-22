@@ -10,6 +10,7 @@ export function MaintenanceScheduleModal({ isOpen, onClose }) {
     serviceValue: '',
     frequency: 'monthly',
     scheduledDate: '',
+    priority: 'normal',
     team: '',
     observations: ''
   })
@@ -48,25 +49,29 @@ export function MaintenanceScheduleModal({ isOpen, onClose }) {
       await maintenanceApi.create({
         titulo: formData.clientName,
         descricao: formData.observations || `Serviço de manutenção (${frequencyLabel}) - Equipe ${formData.team}`,
-        dataAgendada: formData.scheduledDate,
-        status: 'agendada'
+        dataAgendada: new Date(formData.scheduledDate).toISOString(),
+        status: 'agendada',
+        prioridade: formData.priority,
+        frequencia: formData.frequency,
+        valorCents: currencyTocents(formData.serviceValue),
+        equipe: formData.team
       })
-      addToast(`Manutenção agendada para ${formData.clientName} - ${frequencyLabel} - R$ ${(currencyTocents(formData.serviceValue) / 100).toFixed(2)}`, 'success')
+      addToast(`Manutenção agendada para ${formData.clientName} - ${frequencyLabel}`, 'success')
       notifyDataChanged('manutencao')
+      
+      setFormData({
+        clientName: '',
+        serviceValue: '',
+        frequency: 'monthly',
+        scheduledDate: '',
+        priority: 'normal',
+        team: '',
+        observations: ''
+      })
+      onClose()
     } catch (error) {
       addToast(getApiError(error, 'Não foi possível agendar a manutenção.'), 'error')
-      return
     }
-    
-    setFormData({
-      clientName: '',
-      serviceValue: '',
-      frequency: 'monthly',
-      scheduledDate: '',
-      team: '',
-      observations: ''
-    })
-    onClose()
   }
 
   if (!isOpen) return null
@@ -108,15 +113,29 @@ export function MaintenanceScheduleModal({ isOpen, onClose }) {
                   Valor do Serviço (R$) *
                 </label>
                 <input
-                  type="number"
+                  type="text"
                   name="serviceValue"
                   value={formData.serviceValue}
                   onChange={handleChange}
-                  placeholder="0.00"
-                  step="0.01"
-                  min="0"
+                  placeholder="0,00"
                   className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">
+                  Prioridade *
+                </label>
+                <select
+                  name="priority"
+                  value={formData.priority}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
+                >
+                  <option value="low">Baixa</option>
+                  <option value="normal">Normal</option>
+                  <option value="high">Alta</option>
+                </select>
               </div>
 
               <div>
@@ -193,7 +212,7 @@ export function MaintenanceScheduleModal({ isOpen, onClose }) {
                 
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-stone-600">Valor Mensal:</span>
+                    <span className="text-stone-600">Valor Serviço:</span>
                     <span className="font-semibold text-eden-primary">
                       R$ {(currencyTocents(formData.serviceValue) / 100 || 0).toFixed(2)}
                     </span>
