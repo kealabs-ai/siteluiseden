@@ -18,6 +18,7 @@ const EMPTY_FORM = {
   nome: '',
   email: '',
   senha: '',
+  confirmarSenha: '',
   role: 'operador',
   permissoes: ['dashboard', 'catalog', 'sales', 'cashflow']
 }
@@ -61,6 +62,7 @@ export default function Users() {
       nome: user.nome,
       email: user.email,
       senha: '',
+      confirmarSenha: '',
       role: user.role,
       permissoes: user.permissoes || []
     })
@@ -72,6 +74,10 @@ export default function Users() {
     event.preventDefault()
     if (!form.nome || !form.email || (!form.id && !form.senha)) {
       addToast('Preencha nome, e-mail e senha para novos usuários.', 'error')
+      return
+    }
+    if (form.senha !== form.confirmarSenha) {
+      addToast('As senhas não conferem.', 'error')
       return
     }
 
@@ -160,6 +166,7 @@ export default function Users() {
               <input name="nome" value={form.nome} onChange={handleChange} placeholder="Nome completo" className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg" />
               <input name="email" type="email" value={form.email} onChange={handleChange} placeholder="E-mail" className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg" />
               <input name="senha" type="password" value={form.senha} onChange={handleChange} placeholder={form.id ? 'Nova senha (opcional)' : 'Senha'} className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg" />
+              <input name="confirmarSenha" type="password" value={form.confirmarSenha} onChange={handleChange} placeholder={form.id ? 'Confirmar nova senha' : 'Confirmar senha'} className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg" />
               <select name="role" value={form.role} onChange={handleChange} className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg">
                 <option value="admin">Administrador</option>
                 <option value="operador">Operador</option>

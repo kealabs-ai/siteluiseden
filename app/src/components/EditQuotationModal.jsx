@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useToast } from '../ToastContext'
 import { getApiError, notifyDataChanged, quotationApi, supplierApi } from '../services/api'
 
-export function NewQuotationModal({ isOpen, onClose }) {
+export function EditQuotationModal({ isOpen, onClose, quotation }) {
   const { addToast } = useToast()
   const [suppliers, setSuppliers] = useState([])
   const [formData, setFormData] = useState({
@@ -10,7 +10,8 @@ export function NewQuotationModal({ isOpen, onClose }) {
     description: '',
     quantity: 1,
     costPrice: '',
-    salePrice: ''
+    salePrice: '',
+    active: true
   })
 
   useEffect(() => {
@@ -18,6 +19,19 @@ export function NewQuotationModal({ isOpen, onClose }) {
       loadSuppliers()
     }
   }, [isOpen])
+
+  useEffect(() => {
+    if (quotation) {
+      setFormData({
+        supplierId: quotation.fornecedorId || '',
+        description: quotation.descricao || '',
+        quantity: quotation.quantidade || 1,
+        costPrice: (quotation.precoCustoCents / 100).toFixed(2),
+        salePrice: (quotation.precoVendaCents / 100).toFixed(2),
+        active: quotation.ativo !== false
+      })
+    }
+  }, [quotation, isOpen])
 
   const loadSuppliers = async () => {
     try {
@@ -29,10 +43,10 @@ export function NewQuotationModal({ isOpen, onClose }) {
   }
 
   const handleChange = (e) => {
-    const { name, value } = e.target
+    const { name, value, type, checked } = e.target
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'quantity' ? parseInt(value) || 1 : value
+      [name]: type === 'checkbox' ? checked : (name === 'quantity' ? parseInt(value) || 1 : value)
     }))
   }
 
@@ -45,37 +59,31 @@ export function NewQuotationModal({ isOpen, onClose }) {
     }
 
     try {
-      await quotationApi.create({
-        fornecedorId: formData.supplierId,
+      await quotationApi.update({
+        id: quotation.id,
         descricao: formData.description,
         quantidade: formData.quantity,
         precoCustoCents: Math.round(parseFloat(formData.costPrice) * 100),
-        precoVendaCents: Math.round(parseFloat(formData.salePrice) * 100)
+        precoVendaCents: Math.round(parseFloat(formData.salePrice) * 100),
+        ativo: formData.active
       })
-      addToast('Cotação cadastrada com sucesso!', 'success')
+      addToast('Cotação atualizada com sucesso!', 'success')
       notifyDataChanged('cotacoes')
-      setFormData({
-        supplierId: '',
-        description: '',
-        quantity: 1,
-        costPrice: '',
-        salePrice: ''
-      })
       onClose()
     } catch (error) {
-      addToast(getApiError(error, 'Não foi possível cadastrar a cotação.'), 'error')
+      addToast(getApiError(error, 'Não foi possível atualizar a cotação.'), 'error')
     }
   }
 
-  if (!isOpen) return null
+  if (!isOpen || !quotation) return null
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-gradient-to-r from-eden-primary to-eden-light text-white p-6 flex items-center justify-between">
           <h2 className="text-2xl font-bold flex items-center gap-2">
-            <i className="fa-solid fa-file-invoice"></i>
-            Nova Cotação
+            <i className="fa-solid fa-edit"></i>
+            Editar Cotação
           </h2>
           <button onClick={onClose} className="hover:opacity-80 transition-opacity">
             <i className="fa-solid fa-times text-2xl"></i>
@@ -87,19 +95,20 @@ export function NewQuotationModal({ isOpen, onClose }) {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-semibold text-stone-700 mb-2">
-                  Fornecedor *
+                  Fornecedor
                 </label>
                 <select
                   name="supplierId"
                   value={formData.supplierId}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
+                  disabled
+                  className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg bg-stone-50 text-stone-600"
                 >
-                  <option value="">Selecione um fornecedor</option>
                   {suppliers.map(s => (
                     <option key={s.id} value={s.id}>{s.nome}</option>
                   ))}
                 </select>
+                <p className="text-xs text-stone-500 mt-1">Fornecedor não pode ser alterado</p>
               </div>
 
               <div>
@@ -111,7 +120,6 @@ export function NewQuotationModal({ isOpen, onClose }) {
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
-                  placeholder="Ex: Rosa Vermelha Premium"
                   className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
                 />
               </div>
@@ -141,7 +149,6 @@ export function NewQuotationModal({ isOpen, onClose }) {
                   name="costPrice"
                   value={formData.costPrice}
                   onChange={handleChange}
-                  placeholder="0.00"
                   step="0.01"
                   min="0"
                   className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
@@ -157,7 +164,6 @@ export function NewQuotationModal({ isOpen, onClose }) {
                   name="salePrice"
                   value={formData.salePrice}
                   onChange={handleChange}
-                  placeholder="0.00"
                   step="0.01"
                   min="0"
                   className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
@@ -172,6 +178,20 @@ export function NewQuotationModal({ isOpen, onClose }) {
                   </p>
                 </div>
               )}
+
+              <div className="flex items-center gap-3 pt-2">
+                <input
+                  type="checkbox"
+                  id="active"
+                  name="active"
+                  checked={formData.active}
+                  onChange={handleChange}
+                  className="w-5 h-5 rounded border-stone-300 text-eden-primary focus:ring-eden-primary"
+                />
+                <label htmlFor="active" className="text-sm font-semibold text-stone-700">
+                  Cotação Ativa
+                </label>
+              </div>
             </div>
           </div>
 
@@ -188,7 +208,7 @@ export function NewQuotationModal({ isOpen, onClose }) {
               className="flex-1 px-6 py-3 bg-gradient-to-r from-eden-primary to-eden-light text-white rounded-lg hover:shadow-lg transition-all font-semibold flex items-center justify-center gap-2"
             >
               <i className="fa-solid fa-check"></i>
-              Cadastrar Cotação
+              Salvar Alterações
             </button>
           </div>
         </form>

@@ -14,7 +14,9 @@ import { EditTransactionModal } from './EditTransactionModal'
 import { EditMaintenanceModal } from './EditMaintenanceModal'
 import { ImportExcelModal } from './ImportExcelModal'
 import { NewSupplierModal } from './NewSupplierModal'
+import { EditSupplierModal } from './EditSupplierModal'
 import { NewQuotationModal } from './NewQuotationModal'
+import { EditQuotationModal } from './EditQuotationModal'
 import { catalogApi } from '../services/api'
 
 function AppNavigation({ onLogout }) {
@@ -282,6 +284,16 @@ function AppNavigation({ onLogout }) {
       <NewQuotationModal 
         isOpen={modals.newQuotation} 
         onClose={() => closeModal('newQuotation')}
+      />
+      <EditSupplierModal 
+        isOpen={modals.editSupplier} 
+        onClose={() => closeModal('editSupplier')}
+        supplier={modalData.editSupplier}
+      />
+      <EditQuotationModal 
+        isOpen={modals.editQuotation} 
+        onClose={() => closeModal('editQuotation')}
+        quotation={modalData.editQuotation}
       />
     </>
   )

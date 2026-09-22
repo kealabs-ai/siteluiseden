@@ -71,6 +71,13 @@ export const supplierApi = {
   remove: (id) => api.post('/fornecedores/delete', { id })
 }
 
+export const quotationApi = {
+  list: () => api.get('/fornecedores/cotacoes'),
+  create: (data) => api.post('/fornecedores/cotacoes', data),
+  update: (data) => api.post('/fornecedores/cotacoes/update', data),
+  remove: (id) => api.post('/fornecedores/cotacoes/delete', { id })
+}
+
 export const usersApi = {
   list: () => api.get('/usuarios'),
   create: (data) => api.post('/usuarios', data),
