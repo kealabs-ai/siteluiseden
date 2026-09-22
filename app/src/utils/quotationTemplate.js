@@ -1,4 +1,4 @@
-// Função para gerar template XLSX simplificado para importação
+// Função para gerar template XLSX com sheets separadas
 export const generateQuotationTemplate = (supplierName = 'Fornecedor') => {
   const html = `
     <html xmlns:x="urn:schemas-microsoft-com:office:excel">
@@ -12,46 +12,48 @@ export const generateQuotationTemplate = (supplierName = 'Fornecedor') => {
       </style>
     </head>
     <body>
-      <sheet>
-        <table>
-          <tr>
-            <th>Fornecedor</th>
-            <th>Contato</th>
-            <th>Email</th>
-            <th>Telefone</th>
-          </tr>
-          <tr><td></td><td></td><td></td><td></td></tr>
-          <tr><td></td><td></td><td></td><td></td></tr>
-          <tr><td></td><td></td><td></td><td></td></tr>
-          <tr><td></td><td></td><td></td><td></td></tr>
-          <tr><td></td><td></td><td></td><td></td></tr>
-          <tr><td></td><td></td><td></td><td></td></tr>
-          <tr><td></td><td></td><td></td><td></td></tr>
-          <tr><td></td><td></td><td></td><td></td></tr>
-          <tr><td></td><td></td><td></td><td></td></tr>
-          <tr><td></td><td></td><td></td><td></td></tr>
-        </table>
-      </sheet>
-      <sheet>
-        <table>
-          <tr>
-            <th>Fornecedor</th>
-            <th>Produto</th>
-            <th>Quantidade</th>
-            <th>Preço Custo</th>
-          </tr>
-          <tr><td></td><td></td><td></td><td></td></tr>
-          <tr><td></td><td></td><td></td><td></td></tr>
-          <tr><td></td><td></td><td></td><td></td></tr>
-          <tr><td></td><td></td><td></td><td></td></tr>
-          <tr><td></td><td></td><td></td><td></td></tr>
-          <tr><td></td><td></td><td></td><td></td></tr>
-          <tr><td></td><td></td><td></td><td></td></tr>
-          <tr><td></td><td></td><td></td><td></td></tr>
-          <tr><td></td><td></td><td></td><td></td></tr>
-          <tr><td></td><td></td><td></td><td></td></tr>
-        </table>
-      </sheet>
+      <x:ExcelWorkbook>
+        <x:ExcelWorksheet x:Name="Fornecedor">
+          <table>
+            <tr>
+              <th>Fornecedor</th>
+              <th>Contato</th>
+              <th>Email</th>
+              <th>Telefone</th>
+            </tr>
+            <tr><td></td><td></td><td></td><td></td></tr>
+            <tr><td></td><td></td><td></td><td></td></tr>
+            <tr><td></td><td></td><td></td><td></td></tr>
+            <tr><td></td><td></td><td></td><td></td></tr>
+            <tr><td></td><td></td><td></td><td></td></tr>
+            <tr><td></td><td></td><td></td><td></td></tr>
+            <tr><td></td><td></td><td></td><td></td></tr>
+            <tr><td></td><td></td><td></td><td></td></tr>
+            <tr><td></td><td></td><td></td><td></td></tr>
+            <tr><td></td><td></td><td></td><td></td></tr>
+          </table>
+        </x:ExcelWorksheet>
+        <x:ExcelWorksheet x:Name="Cotacao">
+          <table>
+            <tr>
+              <th>Fornecedor</th>
+              <th>Produto</th>
+              <th>Quantidade</th>
+              <th>Preço Custo</th>
+            </tr>
+            <tr><td></td><td></td><td></td><td></td></tr>
+            <tr><td></td><td></td><td></td><td></td></tr>
+            <tr><td></td><td></td><td></td><td></td></tr>
+            <tr><td></td><td></td><td></td><td></td></tr>
+            <tr><td></td><td></td><td></td><td></td></tr>
+            <tr><td></td><td></td><td></td><td></td></tr>
+            <tr><td></td><td></td><td></td><td></td></tr>
+            <tr><td></td><td></td><td></td><td></td></tr>
+            <tr><td></td><td></td><td></td><td></td></tr>
+            <tr><td></td><td></td><td></td><td></td></tr>
+          </table>
+        </x:ExcelWorksheet>
+      </x:ExcelWorkbook>
     </body>
     </html>
   `
