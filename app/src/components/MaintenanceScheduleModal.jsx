@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useToast } from '../ToastContext'
 import { getApiError, maintenanceApi, notifyDataChanged } from '../services/api'
+import { masks, currencyTocents } from '../utils/inputMasks'
 
 export function MaintenanceScheduleModal({ isOpen, onClose }) {
   const { addToast } = useToast()
@@ -15,9 +16,15 @@ export function MaintenanceScheduleModal({ isOpen, onClose }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target
+    let maskedValue = value
+
+    if (name === 'serviceValue') {
+      maskedValue = masks.currency(value)
+    }
+
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: maskedValue
     }))
   }
 
@@ -44,7 +51,7 @@ export function MaintenanceScheduleModal({ isOpen, onClose }) {
         dataAgendada: formData.scheduledDate,
         status: 'agendada'
       })
-      addToast(`Manutenção agendada para ${formData.clientName} - ${frequencyLabel} - R$ ${parseFloat(formData.serviceValue).toFixed(2)}`, 'success')
+      addToast(`Manutenção agendada para ${formData.clientName} - ${frequencyLabel} - R$ ${(currencyTocents(formData.serviceValue) / 100).toFixed(2)}`, 'success')
       notifyDataChanged('manutencao')
     } catch (error) {
       addToast(getApiError(error, 'Não foi possível agendar a manutenção.'), 'error')
@@ -188,7 +195,7 @@ export function MaintenanceScheduleModal({ isOpen, onClose }) {
                   <div className="flex justify-between">
                     <span className="text-stone-600">Valor Mensal:</span>
                     <span className="font-semibold text-eden-primary">
-                      R$ {(parseFloat(formData.serviceValue) || 0).toFixed(2)}
+                      R$ {(currencyTocents(formData.serviceValue) / 100 || 0).toFixed(2)}
                     </span>
                   </div>
                   
@@ -205,7 +212,7 @@ export function MaintenanceScheduleModal({ isOpen, onClose }) {
                   <div className="flex justify-between pt-2 border-t border-stone-200">
                     <span className="text-stone-600 font-semibold">Receita Anual Est.:</span>
                     <span className="font-bold text-green-600">
-                      R$ {(parseFloat(formData.serviceValue) * 12 || 0).toFixed(2)}
+                      R$ {(currencyTocents(formData.serviceValue) / 100 * 12 || 0).toFixed(2)}
                     </span>
                   </div>
                 </div>

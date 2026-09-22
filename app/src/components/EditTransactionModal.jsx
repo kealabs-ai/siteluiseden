@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useToast } from '../ToastContext'
 import { financeApi, getApiError, notifyDataChanged } from '../services/api'
+import { masks, currencyTocents } from '../utils/inputMasks'
 
 export function EditTransactionModal({ isOpen, onClose, transactionData = {} }) {
   const { addToast } = useToast()
@@ -26,9 +27,15 @@ export function EditTransactionModal({ isOpen, onClose, transactionData = {} }) 
 
   const handleChange = (e) => {
     const { name, value } = e.target
+    let maskedValue = value
+
+    if (name === 'amount') {
+      maskedValue = masks.currency(value)
+    }
+
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: maskedValue
     }))
   }
 
@@ -41,7 +48,7 @@ export function EditTransactionModal({ isOpen, onClose, transactionData = {} }) 
     }
 
     try {
-      await financeApi.update({ id: transactionData.id, descricao: formData.description, tipo: formData.type, categoria: formData.category, valorCents: Math.round(parseFloat(formData.amount) * 100), data: formData.date })
+      await financeApi.update({ id: transactionData.id, descricao: formData.description, tipo: formData.type, categoria: formData.category, valorCents: currencyTocents(formData.amount), data: formData.date })
       addToast(`Transação "${formData.description}" atualizada com sucesso!`, 'success')
       notifyDataChanged('financeiro')
     } catch (error) {

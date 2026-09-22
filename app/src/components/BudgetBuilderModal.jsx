@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useToast } from '../ToastContext'
+import { masks, currencyTocents } from '../utils/inputMasks'
 
 export function BudgetBuilderModal({ isOpen, onClose, flowers = [] }) {
   const { addToast } = useToast()
@@ -26,9 +27,15 @@ export function BudgetBuilderModal({ isOpen, onClose, flowers = [] }) {
 
   const handleCostChange = (e) => {
     const { name, value } = e.target
+    let maskedValue = value
+
+    if (name === 'materials' || name === 'labor') {
+      maskedValue = masks.currency(value)
+    }
+
     setCosts(prev => ({
       ...prev,
-      [name]: value
+      [name]: maskedValue
     }))
   }
 
@@ -59,8 +66,8 @@ export function BudgetBuilderModal({ isOpen, onClose, flowers = [] }) {
   }
 
   const totalMaterials = budgetItems.reduce((sum, item) => sum + item.subtotal, 0)
-  const laborCost = parseFloat(costs.labor) || 0
-  const materialsCost = parseFloat(costs.materials) || 0
+  const laborCost = currencyTocents(costs.labor) / 100
+  const materialsCost = currencyTocents(costs.materials) / 100
   const totalCost = totalMaterials + laborCost + materialsCost
   const suggestedPrice = totalCost * 1.4
   const estimatedProfit = suggestedPrice - totalCost

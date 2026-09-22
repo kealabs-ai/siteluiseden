@@ -13,15 +13,17 @@ import { EditPlantModal } from './EditPlantModal'
 import { EditTransactionModal } from './EditTransactionModal'
 import { EditMaintenanceModal } from './EditMaintenanceModal'
 import { ImportExcelModal } from './ImportExcelModal'
+import { ImportQuotationsModal } from './ImportQuotationsModal'
 import { NewSupplierModal } from './NewSupplierModal'
 import { EditSupplierModal } from './EditSupplierModal'
 import { NewQuotationModal } from './NewQuotationModal'
 import { EditQuotationModal } from './EditQuotationModal'
+import { ConfirmationModal } from './ConfirmationModal'
 import { catalogApi } from '../services/api'
 
 function AppNavigation({ onLogout }) {
   const navigate = useNavigate()
-  const { modals, modalData, closeModal, openModal } = useModal()
+  const { modals, modalData, closeModal, openModal, confirmationData } = useModal()
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isVersionOpen, setIsVersionOpen] = useState(false)
   
@@ -277,6 +279,10 @@ function AppNavigation({ onLogout }) {
         isOpen={modals.importExcel} 
         onClose={() => closeModal('importExcel')}
       />
+      <ImportQuotationsModal 
+        isOpen={modals.importQuotations} 
+        onClose={() => closeModal('importQuotations')}
+      />
       <NewSupplierModal 
         isOpen={modals.newSupplier} 
         onClose={() => closeModal('newSupplier')}
@@ -294,6 +300,16 @@ function AppNavigation({ onLogout }) {
         isOpen={modals.editQuotation} 
         onClose={() => closeModal('editQuotation')}
         quotation={modalData.editQuotation}
+      />
+      <ConfirmationModal
+        isOpen={modals.confirmation}
+        title={confirmationData.title}
+        message={confirmationData.message}
+        onConfirm={confirmationData.onConfirm}
+        onCancel={confirmationData.onCancel}
+        confirmText={confirmationData.confirmText}
+        cancelText={confirmationData.cancelText}
+        isDangerous={confirmationData.isDangerous}
       />
     </>
   )

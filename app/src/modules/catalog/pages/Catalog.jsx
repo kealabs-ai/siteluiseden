@@ -5,7 +5,7 @@ import { useToast } from '../../../ToastContext'
 
 export default function Catalog() {
   const [activeTab, setActiveTab] = useState('flowers')
-  const { openModal } = useModal()
+  const { openModal, openConfirmation } = useModal()
   const { addToast } = useToast()
   const [loading, setLoading] = useState(true)
   const [flowers, setFlowers] = useState([])
@@ -37,13 +37,21 @@ export default function Catalog() {
   }, [])
 
   const handleDelete = async (id) => {
-    try {
-      await catalogApi.remove(id)
-      addToast('Planta removida com sucesso.', 'success')
-      loadFlowers()
-    } catch (error) {
-      addToast(getApiError(error, 'Não foi possível remover a planta.'), 'error')
-    }
+    openConfirmation(
+      'Deletar Planta',
+      'Tem certeza que deseja remover esta planta do catálogo?',
+      async () => {
+        try {
+          await catalogApi.remove(id)
+          addToast('Planta removida com sucesso.', 'success')
+          loadFlowers()
+        } catch (error) {
+          addToast(getApiError(error, 'Não foi possível remover a planta.'), 'error')
+        }
+      },
+      () => {},
+      { confirmText: 'Deletar', cancelText: 'Cancelar', isDangerous: true }
+    )
   }
 
   const [arrangements] = useState([

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useToast } from '../ToastContext'
 import { catalogApi, getApiError, notifyDataChanged, salesApi } from '../services/api'
+import { masks, currencyTocents } from '../utils/inputMasks'
 
 const getLocalDateTime = () => {
   const now = new Date()
@@ -57,9 +58,15 @@ export function QuickSaleModal({ isOpen, onClose, flowers = [] }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target
+    let maskedValue = value
+
+    if (name === 'discountPercent') {
+      maskedValue = value.replace(/[^0-9.]/g, '')
+    }
+
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'quantity' ? parseInt(value) || 1 : value
+      [name]: name === 'quantity' ? parseInt(value) || 1 : maskedValue
     }))
   }
 

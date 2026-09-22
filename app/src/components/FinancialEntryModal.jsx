@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useToast } from '../ToastContext'
 import { financeApi, getApiError, notifyDataChanged } from '../services/api'
+import { masks, currencyTocents } from '../utils/inputMasks'
 
 export function FinancialEntryModal({ isOpen, onClose }) {
   const { addToast } = useToast()
@@ -19,9 +20,15 @@ export function FinancialEntryModal({ isOpen, onClose }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target
+    let maskedValue = value
+
+    if (name === 'value') {
+      maskedValue = masks.currency(value)
+    }
+
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: maskedValue
     }))
   }
 
@@ -50,7 +57,7 @@ export function FinancialEntryModal({ isOpen, onClose }) {
         tipo: formData.type,
         descricao: formData.description,
         categoria: formData.category,
-        valorCents: Math.round(parseFloat(formData.value) * 100),
+        valorCents: currencyTocents(formData.value),
         data: new Date().toISOString().slice(0, 10)
       })
       addToast(`${typeLabel} de R$ ${parseFloat(formData.value).toFixed(2)} registrada com sucesso!`, 'success')
