@@ -1,27 +1,39 @@
 import axios from 'axios'
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000'
+const API_BASE_URL = (import.meta.env.VITE_API_URL || 'https://srv1023256.hstgr.cloud').replace(/\/$/, '')
+const API_PREFIX = '/v1/eden/fiscal'
+
+const api = axios.create({
+  baseURL: `${API_BASE_URL}${API_PREFIX}`,
+  headers: { 'Content-Type': 'application/json' }
+})
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('accessToken')
+  if (token) config.headers.Authorization = `Bearer ${token}`
+  return config
+})
 
 const fiscalApi = {
   // Configuração Fiscal
-  createConfig: (data) => axios.post(`${API_BASE_URL}/v1/eden/fiscal/configuracao`, data),
-  getConfig: (empresaId) => axios.get(`${API_BASE_URL}/v1/eden/fiscal/configuracao/${empresaId}`),
+  createConfig: (data) => api.post('/configuracao', data),
+  getConfig: (empresaId) => api.get(`/configuracao/${empresaId}`),
 
   // NF-e
-  createNFe: (data) => axios.post(`${API_BASE_URL}/v1/eden/fiscal/nfe`, data),
-  getNFe: (nfeId) => axios.get(`${API_BASE_URL}/v1/eden/fiscal/nfe/${nfeId}`),
-  listNFe: () => axios.get(`${API_BASE_URL}/v1/eden/fiscal/nfe`),
+  createNFe: (data) => api.post('/nfe', data),
+  getNFe: (nfeId) => api.get(`/nfe/${nfeId}`),
+  listNFe: () => api.get('/nfe'),
 
   // Assinatura e Autorização
-  signNFe: (nfeId) => axios.post(`${API_BASE_URL}/v1/eden/fiscal/nfe/assinar`, { notaFiscalId: nfeId }),
-  authorizeNFe: (nfeId) => axios.post(`${API_BASE_URL}/v1/eden/fiscal/nfe/autorizar`, { notaFiscalId: nfeId }),
+  signNFe: (nfeId) => api.post('/nfe/assinar', { notaFiscalId: nfeId }),
+  authorizeNFe: (nfeId) => api.post('/nfe/autorizar', { notaFiscalId: nfeId }),
 
   // Consultas
-  consultaProtocolo: (chaveNfe) => axios.post(`${API_BASE_URL}/v1/eden/fiscal/nfe/consulta-protocolo`, { chaveNfe }),
-  statusSefaz: () => axios.get(`${API_BASE_URL}/v1/eden/fiscal/status-sefaz`),
+  consultaProtocolo: (chaveNfe) => api.post('/nfe/consulta-protocolo', { chaveNfe }),
+  statusSefaz: () => api.get('/status-sefaz'),
 
   // Cancelamento
-  cancelNFe: (nfeId, justificativa) => axios.post(`${API_BASE_URL}/v1/eden/fiscal/nfe/cancelar`, {
+  cancelNFe: (nfeId, justificativa) => api.post('/nfe/cancelar', {
     notaFiscalId: nfeId,
     justificativa
   })
