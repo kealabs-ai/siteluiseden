@@ -21,6 +21,8 @@ export function ModalProvider({ children }) {
     editSupplier: false,
     newQuotation: false,
     editQuotation: false,
+    newClient: false,
+    editClient: false,
     confirmation: false
   })
 

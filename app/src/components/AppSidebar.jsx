@@ -6,7 +6,7 @@ function AppSidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const user = JSON.parse(localStorage.getItem('user') || '{}')
   const permissions = user.role === 'admin'
-    ? ['dashboard', 'catalog', 'sales', 'budget', 'cashflow', 'maintenance', 'supplier', 'users']
+    ? ['dashboard', 'catalog', 'sales', 'budget', 'cashflow', 'maintenance', 'supplier', 'clients', 'users']
     : user.permissoes || ['dashboard']
 
   const modules = [
@@ -58,6 +58,13 @@ function AppSidebar() {
       icon: 'fa-truck',
       path: '/supplier',
       color: 'from-indigo-500 to-indigo-600'
+    },
+    {
+      id: 'clients',
+      label: 'Clientes',
+      icon: 'fa-users',
+      path: '/clients',
+      color: 'from-cyan-500 to-cyan-600'
     },
     {
       id: 'users',

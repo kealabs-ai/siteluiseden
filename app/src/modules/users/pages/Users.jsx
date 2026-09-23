@@ -9,6 +9,7 @@ const MENU_OPTIONS = [
   { id: 'budget', label: 'Orçamentos' },
   { id: 'cashflow', label: 'Fluxo de Caixa' },
   { id: 'maintenance', label: 'Agenda de Cuidados' },
+  { id: 'clients', label: 'Clientes' },
   { id: 'supplier', label: 'Fornecedores' },
   { id: 'users', label: 'Usuários e Acessos' }
 ]

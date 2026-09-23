@@ -16,10 +16,10 @@ export function EditPlantModal({ isOpen, onClose, plantData = {} }) {
   })
 
   useEffect(() => {
-    if (plantData && plantData.id) {
+    if (isOpen && plantData && (plantData.id || plantData.name)) {
       setFormData({
         name: plantData.name || '',
-        supplier: plantData.supplier || '',
+        supplier: plantData.supplier || plantData.category || '',
         cost: plantData.cost || plantData.price || '',
         salePrice: plantData.salePrice || plantData.price || '',
         stock: plantData.stock || plantData.quantity || '',
@@ -51,6 +51,11 @@ export function EditPlantModal({ isOpen, onClose, plantData = {} }) {
       return
     }
 
+    if (!plantData.id) {
+      addToast('Erro: ID da planta não encontrado', 'error')
+      return
+    }
+
     try {
       await catalogApi.update({ id: plantData.id, nome: formData.name, categoria: formData.supplier, custoCents: currencyTocents(formData.cost), precoCents: currencyTocents(formData.salePrice), estoque: Number(formData.stock) })
       addToast(`Planta "${formData.name}" atualizada com sucesso!`, 'success')
@@ -62,7 +67,7 @@ export function EditPlantModal({ isOpen, onClose, plantData = {} }) {
     onClose()
   }
 
-  if (!isOpen) return null
+  if (!isOpen || !plantData.id) return null
 
   const cost = currencyTocents(formData.cost) / 100
   const salePrice = currencyTocents(formData.salePrice) / 100

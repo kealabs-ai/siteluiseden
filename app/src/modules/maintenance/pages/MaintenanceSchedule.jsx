@@ -2,9 +2,12 @@ import React, { useEffect, useState } from 'react'
 import { useModal } from '../../../ModalContext'
 import { getApiError, maintenanceApi } from '../../../services/api'
 import { useToast } from '../../../ToastContext'
+import { MaintenanceKanbanModal } from '../../../components/MaintenanceKanbanModal'
+import { formatCurrency } from '../../../utils/formatters'
 
 export default function MaintenanceSchedule() {
   const [schedules, setSchedules] = useState([])
+  const [kanbanOpen, setKanbanOpen] = useState(false)
   const { addToast } = useToast()
   const { openModal, openConfirmation } = useModal()
 
@@ -16,7 +19,8 @@ export default function MaintenanceSchedule() {
         client: schedule.titulo,
         service: schedule.descricao || 'Manutenção',
         date: schedule.dataAgendada,
-        status: schedule.status === 'agendada' ? 'scheduled' : schedule.status
+        priority: schedule.prioridade || 'normal',
+        status: schedule.status === 'agendada' ? 'scheduled' : schedule.status === 'em_progresso' ? 'in_progress' : schedule.status === 'pausada' ? 'paused' : schedule.status === 'concluida' ? 'completed' : schedule.status
       })))
     } catch (error) {
       addToast(getApiError(error, 'Não foi possível carregar as manutenções.'), 'error')
@@ -85,6 +89,7 @@ export default function MaintenanceSchedule() {
 
   const scheduledCount = schedules.filter(s => s.status === 'scheduled').length
   const inProgressCount = schedules.filter(s => s.status === 'in_progress').length
+  const pausedCount = schedules.filter(s => s.status === 'paused').length
   const completedCount = schedules.filter(s => s.status === 'completed').length
 
   return (
@@ -127,11 +132,11 @@ export default function MaintenanceSchedule() {
 
           <div className="bg-white rounded-xl p-6 border border-stone-200">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-medium text-stone-600">Concluídas</h3>
-              <i className="fa-solid fa-check-circle text-green-500 text-2xl"></i>
+              <h3 className="text-sm font-medium text-stone-600">Pausadas</h3>
+              <i className="fa-solid fa-pause text-orange-500 text-2xl"></i>
             </div>
-            <p className="text-3xl font-bold text-green-600">{completedCount}</p>
-            <p className="text-xs text-stone-500 mt-2">Finalizadas</p>
+            <p className="text-3xl font-bold text-orange-600">{pausedCount}</p>
+            <p className="text-xs text-stone-500 mt-2">Pausadas</p>
           </div>
         </div>
 
@@ -139,10 +144,19 @@ export default function MaintenanceSchedule() {
         <div className="bg-white rounded-xl border border-stone-200 overflow-hidden">
           <div className="p-6 border-b border-stone-200 flex items-center justify-between">
             <h2 className="text-lg font-bold text-eden-primary">Cronograma de Manutenção</h2>
-            <button onClick={() => openModal('maintenanceSchedule')} className="px-4 py-2 bg-eden-primary text-white rounded-lg hover:bg-eden-light transition-colors text-sm font-medium">
-              <i className="fa-solid fa-plus mr-2"></i>
-              Agendar Manutenção
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setKanbanOpen(true)}
+                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium flex items-center justify-center w-12 h-12 hover:scale-110 transform"
+                title="Visualizar Kanban"
+              >
+                <i className="fa-solid fa-tv text-lg"></i>
+              </button>
+              <button onClick={() => openModal('maintenanceSchedule')} className="px-4 py-2 bg-eden-primary text-white rounded-lg hover:bg-eden-light transition-colors text-sm font-medium flex items-center gap-2">
+                <i className="fa-solid fa-calendar-plus"></i>
+                Agendar Manutenção
+              </button>
+            </div>
           </div>
 
           <div className="overflow-x-auto">
@@ -172,13 +186,19 @@ export default function MaintenanceSchedule() {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(schedule.status)}`}>
+                      <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${
+                        schedule.status === 'scheduled' ? 'bg-blue-100 text-blue-800' :
+                        schedule.status === 'in_progress' ? 'bg-yellow-100 text-yellow-800' :
+                        schedule.status === 'paused' ? 'bg-orange-100 text-orange-800' :
+                        'bg-green-100 text-green-800'
+                      }`}>
                         <i className={`fa-solid ${
                           schedule.status === 'scheduled' ? 'fa-calendar' :
                           schedule.status === 'in_progress' ? 'fa-spinner' :
+                          schedule.status === 'paused' ? 'fa-pause' :
                           'fa-check'
                         }`}></i>
-                        {getStatusLabel(schedule.status)}
+                        {schedule.status === 'scheduled' ? 'Agendado' : schedule.status === 'in_progress' ? 'Em Progresso' : schedule.status === 'paused' ? 'Pausado' : 'Concluído'}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-sm">
@@ -196,6 +216,8 @@ export default function MaintenanceSchedule() {
           </div>
         </div>
       </main>
+      {/* Kanban Modal */}
+      <MaintenanceKanbanModal isOpen={kanbanOpen} onClose={() => setKanbanOpen(false)} schedules={schedules} />
     </div>
   )
 }

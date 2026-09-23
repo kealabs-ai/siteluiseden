@@ -11,7 +11,9 @@ export function NewQuotationModal({ isOpen, onClose }) {
     description: '',
     quantity: '',
     costPrice: '',
-    salePrice: ''
+    salePrice: '',
+    lightRequirement: 'medium',
+    waterFrequency: 'daily'
   })
 
   useEffect(() => {
@@ -43,6 +45,13 @@ export function NewQuotationModal({ isOpen, onClose }) {
       ...prev,
       [name]: maskedValue
     }))
+  }
+
+  const calculateProfit = () => {
+    if (!formData.costPrice || !formData.salePrice) return 0
+    const cost = currencyTocents(formData.costPrice) / 100
+    const sale = currencyTocents(formData.salePrice) / 100
+    return (sale - cost).toFixed(2)
   }
 
   const calculateMargin = () => {
@@ -81,7 +90,9 @@ export function NewQuotationModal({ isOpen, onClose }) {
         description: '',
         quantity: '',
         costPrice: '',
-        salePrice: ''
+        salePrice: '',
+        lightRequirement: 'medium',
+        waterFrequency: 'daily'
       })
       onClose()
     } catch (error) {
@@ -91,7 +102,10 @@ export function NewQuotationModal({ isOpen, onClose }) {
 
   if (!isOpen) return null
 
-  const margin = calculateMargin()
+  const cost = currencyTocents(formData.costPrice) / 100
+  const salePrice = currencyTocents(formData.salePrice) / 100
+  const markup = cost > 0 ? ((salePrice - cost) / cost * 100).toFixed(1) : 0
+  const margin = salePrice > 0 ? ((salePrice - cost) / salePrice * 100).toFixed(1) : 0
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
@@ -108,6 +122,7 @@ export function NewQuotationModal({ isOpen, onClose }) {
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Left Column */}
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-semibold text-stone-700 mb-2">
@@ -140,6 +155,35 @@ export function NewQuotationModal({ isOpen, onClose }) {
                 />
               </div>
 
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">
+                    Preço de Custo (R$) *
+                  </label>
+                  <input
+                    type="text"
+                    name="costPrice"
+                    value={formData.costPrice}
+                    onChange={handleChange}
+                    placeholder="0,00"
+                    className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">
+                    Preço de Venda (R$) *
+                  </label>
+                  <input
+                    type="text"
+                    name="salePrice"
+                    value={formData.salePrice}
+                    onChange={handleChange}
+                    placeholder="0,00"
+                    className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
+                  />
+                </div>
+              </div>
+
               <div>
                 <label className="block text-sm font-semibold text-stone-700 mb-2">
                   Quantidade *
@@ -155,43 +199,71 @@ export function NewQuotationModal({ isOpen, onClose }) {
               </div>
             </div>
 
+            {/* Right Column */}
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-semibold text-stone-700 mb-2">
-                  Preço de Custo (R$) *
+                  Exigência de Luz
                 </label>
-                <input
-                  type="text"
-                  name="costPrice"
-                  value={formData.costPrice}
+                <select
+                  name="lightRequirement"
+                  value={formData.lightRequirement}
                   onChange={handleChange}
-                  placeholder="0,00"
                   className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
-                />
+                >
+                  <option value="low">Baixa (Sombra)</option>
+                  <option value="medium">Média (Meia Sombra)</option>
+                  <option value="high">Alta (Pleno Sol)</option>
+                </select>
               </div>
 
               <div>
                 <label className="block text-sm font-semibold text-stone-700 mb-2">
-                  Preço de Venda (R$) *
+                  Frequência de Rega
                 </label>
-                <input
-                  type="text"
-                  name="salePrice"
-                  value={formData.salePrice}
+                <select
+                  name="waterFrequency"
+                  value={formData.waterFrequency}
                   onChange={handleChange}
-                  placeholder="0,00"
                   className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
-                />
+                >
+                  <option value="daily">Diária</option>
+                  <option value="alternate">Dia Sim, Dia Não</option>
+                  <option value="weekly">Semanal</option>
+                  <option value="biweekly">Quinzenal</option>
+                </select>
               </div>
 
-              {formData.costPrice && formData.salePrice && (
-                <div className="bg-eden-primary/10 p-4 rounded-lg border-2 border-eden-primary/20">
-                  <p className="text-sm text-stone-600 mb-1">Margem de Lucro:</p>
-                  <p className={`text-3xl font-bold ${margin >= 35 ? 'text-green-600' : margin >= 20 ? 'text-yellow-600' : 'text-red-600'}`}>
-                    {margin}%
-                  </p>
+              {/* Financial Summary */}
+              <div className="bg-stone-50 p-4 rounded-lg border-2 border-stone-200 space-y-3">
+                <h3 className="font-bold text-stone-900 text-sm">Resumo Financeiro</h3>
+                
+                <div className="flex justify-between items-center pb-2 border-b border-stone-200">
+                  <span className="text-xs text-stone-600">Custo Unit.:</span>
+                  <span className="font-semibold text-stone-900">R$ {(currencyTocents(formData.costPrice) / 100).toFixed(2)}</span>
                 </div>
-              )}
+
+                <div className="flex justify-between items-center pb-2 border-b border-stone-200">
+                  <span className="text-xs text-stone-600">Preço Venda:</span>
+                  <span className="font-semibold text-eden-primary">R$ {(currencyTocents(formData.salePrice) / 100).toFixed(2)}</span>
+                </div>
+
+                <div className="flex justify-between items-center pb-2 border-b-2 border-eden-primary">
+                  <span className="text-xs text-stone-600 font-semibold">Lucro Unit.:</span>
+                  <span className="font-bold text-green-600">R$ {calculateProfit()}</span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 pt-2">
+                  <div className="bg-white p-2 rounded text-center">
+                    <p className="text-xs text-stone-600">Markup</p>
+                    <p className="font-bold text-eden-primary">{calculateMargin()}%</p>
+                  </div>
+                  <div className="bg-white p-2 rounded text-center">
+                    <p className="text-xs text-stone-600">Margem</p>
+                    <p className="font-bold text-eden-primary">{calculateMargin()}%</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 

@@ -87,6 +87,14 @@ export const usersApi = {
   updatePassword: (id, senha) => api.post('/usuarios/senha', { id, senha })
 }
 
+export const clientsApi = {
+  list: () => api.get('/clientes'),
+  get: (id) => api.get(`/clientes/${id}`),
+  create: (data) => api.post('/clientes', data),
+  update: (id, data) => api.put(`/clientes/${id}`, data),
+  remove: (id) => api.delete(`/clientes/${id}`)
+}
+
 export const notifyDataChanged = (resource) => {
   window.dispatchEvent(new CustomEvent('eden:data-changed', { detail: { resource } }))
 }

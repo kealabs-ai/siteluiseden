@@ -77,7 +77,8 @@ export const unmask = (value) => {
 
 // Função para converter moeda formatada para centavos
 export const currencyTocents = (value) => {
-  if (!value) return 0
+  if (!value && value !== 0) return 0
+  if (typeof value === 'number') return Math.round(value * 100)
   const cleaned = value.replace(/\D/g, '')
   return parseInt(cleaned) || 0
 }

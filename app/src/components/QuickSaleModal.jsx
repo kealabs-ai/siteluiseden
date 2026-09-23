@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useToast } from '../ToastContext'
-import { catalogApi, getApiError, notifyDataChanged, salesApi } from '../services/api'
+import { catalogApi, clientsApi, getApiError, notifyDataChanged, salesApi } from '../services/api'
 import { masks, currencyTocents } from '../utils/inputMasks'
 
 const getLocalDateTime = () => {
@@ -14,8 +14,14 @@ export function QuickSaleModal({ isOpen, onClose, flowers = [] }) {
   const [catalogFlowers, setCatalogFlowers] = useState([])
   const [catalogLoading, setCatalogLoading] = useState(false)
   const [catalogError, setCatalogError] = useState('')
+  const [clients, setClients] = useState([])
+  const [clientsLoading, setClientsLoading] = useState(false)
+  const [clientsError, setClientsError] = useState('')
+  const [clientSearch, setClientSearch] = useState('')
+  const [showClientDropdown, setShowClientDropdown] = useState(false)
   const [formData, setFormData] = useState({
     client: '',
+    clientId: '',
     flower: '',
     quantity: 1,
     paymentMethod: 'pix',
@@ -27,30 +33,46 @@ export function QuickSaleModal({ isOpen, onClose, flowers = [] }) {
   useEffect(() => {
     if (!isOpen) return
 
-    const loadCatalog = async () => {
+    const loadData = async () => {
       setCatalogLoading(true)
       setCatalogError('')
+      setClientsLoading(true)
+      setClientsError('')
       try {
-        const { data } = await catalogApi.list()
-        setCatalogFlowers(data.map(plant => ({
+        const [catalogRes, clientsRes] = await Promise.all([
+          catalogApi.list(),
+          clientsApi.list()
+        ])
+        setCatalogFlowers(catalogRes.data.map(plant => ({
           id: plant.id,
           name: plant.nome,
           price: plant.precoCents / 100,
           stock: plant.estoque
         })))
+        setClients(clientsRes.data.map(client => ({
+          id: client.id,
+          name: client.nome,
+          phone: client.telefone
+        })))
       } catch (error) {
         setCatalogFlowers([])
         setCatalogError(getApiError(error, 'Não foi possível carregar as plantas.'))
+        setClients([])
+        setClientsError(getApiError(error, 'Não foi possível carregar os clientes.'))
       } finally {
         setCatalogLoading(false)
+        setClientsLoading(false)
       }
     }
 
-    loadCatalog()
+    loadData()
   }, [isOpen])
 
   const availableFlowers = catalogFlowers
   const selectedFlower = availableFlowers.find(f => String(f.id) === String(formData.flower))
+  const filteredClients = clients.filter(c => 
+    c.name.toLowerCase().includes(clientSearch.toLowerCase())
+  )
   const subtotal = saleItems.reduce((total, item) => total + item.price * item.quantity, 0)
   const discountPercent = Math.min(100, Math.max(0, Number(formData.discountPercent) || 0))
   const discountAmount = subtotal * (discountPercent / 100)
@@ -68,6 +90,16 @@ export function QuickSaleModal({ isOpen, onClose, flowers = [] }) {
       ...prev,
       [name]: name === 'quantity' ? parseInt(value) || 1 : maskedValue
     }))
+  }
+
+  const handleClientSelect = (client) => {
+    setFormData(prev => ({
+      ...prev,
+      client: client.name,
+      clientId: client.id
+    }))
+    setClientSearch('')
+    setShowClientDropdown(false)
   }
 
   const addItem = () => {
@@ -101,8 +133,8 @@ export function QuickSaleModal({ isOpen, onClose, flowers = [] }) {
   const handleSubmit = async (e) => {
     e.preventDefault()
     
-    if (!formData.client || saleItems.length === 0 || !formData.saleDate) {
-      addToast('Preencha o cliente, a data e adicione ao menos um item.', 'error')
+    if (!formData.clientId || saleItems.length === 0 || !formData.saleDate) {
+      addToast('Selecione um cliente, a data e adicione ao menos um item.', 'error')
       return
     }
 
@@ -128,6 +160,7 @@ export function QuickSaleModal({ isOpen, onClose, flowers = [] }) {
     
     setFormData({
       client: '',
+      clientId: '',
       flower: '',
       quantity: 1,
       paymentMethod: 'pix',
@@ -135,6 +168,7 @@ export function QuickSaleModal({ isOpen, onClose, flowers = [] }) {
       discountPercent: 0
     })
     setSaleItems([])
+    setClientSearch('')
     onClose()
   }
 
@@ -158,18 +192,44 @@ export function QuickSaleModal({ isOpen, onClose, flowers = [] }) {
           {/* Left Column - Form */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="space-y-6">
-              <div>
+              <div className="relative">
                 <label className="block text-sm font-semibold text-stone-700 mb-2">
                   Nome do Cliente
                 </label>
                 <input
                   type="text"
-                  name="client"
-                  value={formData.client}
-                  onChange={handleChange}
-                  placeholder="Ex: João Silva"
-                  className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
+                  value={clientSearch || formData.client}
+                  onChange={(e) => {
+                    setClientSearch(e.target.value)
+                    setShowClientDropdown(true)
+                  }}
+                  onFocus={() => setShowClientDropdown(true)}
+                  placeholder="Buscar cliente..."
+                  disabled={clientsLoading}
+                  className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20 disabled:opacity-50"
                 />
+                {clientsError && <p className="mt-2 text-sm text-red-600">{clientsError}</p>}
+                {showClientDropdown && (clientSearch || !formData.client) && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border-2 border-stone-200 rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto">
+                    {filteredClients.length === 0 ? (
+                      <div className="px-4 py-3 text-sm text-stone-500">
+                        {clientsLoading ? 'Carregando clientes...' : 'Nenhum cliente encontrado'}
+                      </div>
+                    ) : (
+                      filteredClients.map(client => (
+                        <button
+                          key={client.id}
+                          type="button"
+                          onClick={() => handleClientSelect(client)}
+                          className="w-full text-left px-4 py-3 hover:bg-eden-accent-light transition-colors border-b border-stone-100 last:border-b-0"
+                        >
+                          <p className="font-semibold text-stone-800">{client.name}</p>
+                          {client.phone && <p className="text-xs text-stone-500">{client.phone}</p>}
+                        </button>
+                      ))
+                    )}
+                  </div>
+                )}
               </div>
 
               <div>

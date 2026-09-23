@@ -1,9 +1,16 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useToast } from '../ToastContext'
+import { budgetApi, catalogApi, clientsApi, getApiError, notifyDataChanged } from '../services/api'
 import { masks, currencyTocents } from '../utils/inputMasks'
 
-export function BudgetBuilderModal({ isOpen, onClose, flowers = [] }) {
+export function BudgetBuilderModal({ isOpen, onClose }) {
   const { addToast } = useToast()
+  const [flowers, setFlowers] = useState([])
+  const [clients, setClients] = useState([])
+  const [filteredClients, setFilteredClients] = useState([])
+  const [showClientSuggestions, setShowClientSuggestions] = useState(false)
+  const [loading, setLoading] = useState(false)
+  
   const [clientData, setClientData] = useState({
     clientName: '',
     projectType: 'residential'
@@ -16,6 +23,61 @@ export function BudgetBuilderModal({ isOpen, onClose, flowers = [] }) {
     materials: '',
     labor: ''
   })
+
+  useEffect(() => {
+    if (isOpen) {
+      loadFlowers()
+      loadClients()
+    }
+  }, [isOpen])
+
+  const loadFlowers = async () => {
+    try {
+      setLoading(true)
+      const { data } = await catalogApi.list()
+      setFlowers(data || [])
+    } catch (error) {
+      addToast(getApiError(error, 'Erro ao carregar plantas'), 'error')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const loadClients = async () => {
+    try {
+      const { data } = await clientsApi.list()
+      setClients(data || [])
+    } catch (error) {
+      console.error('Erro ao carregar clientes:', error)
+    }
+  }
+
+  const handleClientSearch = (value) => {
+    setClientData(prev => ({
+      ...prev,
+      clientName: value
+    }))
+
+    if (value.length > 0) {
+      const filtered = clients.filter(client =>
+        (client.nome || '').toLowerCase().includes(value.toLowerCase()) ||
+        (client.email || '').toLowerCase().includes(value.toLowerCase())
+      )
+      setFilteredClients(filtered)
+      setShowClientSuggestions(true)
+    } else {
+      setFilteredClients([])
+      setShowClientSuggestions(false)
+    }
+  }
+
+  const selectClient = (client) => {
+    setClientData(prev => ({
+      ...prev,
+      clientName: client.nome || ''
+    }))
+    setShowClientSuggestions(false)
+  }
 
   const handleClientChange = (e) => {
     const { name, value } = e.target
@@ -45,46 +107,79 @@ export function BudgetBuilderModal({ isOpen, onClose, flowers = [] }) {
       return
     }
 
-    const flower = flowers.find(f => f.id === parseInt(selectedFlower))
+    const flower = flowers.find(f => f.id === selectedFlower)
+    if (!flower) {
+      addToast('Planta não encontrada', 'error')
+      return
+    }
+
+    const costUnit = (flower.custoCents || flower.precoCents) / 100
+    const saleUnit = (flower.precoCents || 0) / 100
+    const subtotal = saleUnit * quantity
+
     const item = {
       id: Date.now(),
-      flower: flower.name,
+      flowerName: flower.nome,
+      flowerId: flower.id,
       quantity,
-      costUnit: flower.price,
-      saleUnit: flower.price * 1.5,
-      subtotal: flower.price * 1.5 * quantity
+      costUnit,
+      saleUnit,
+      subtotal
     }
 
     setBudgetItems([...budgetItems, item])
     setSelectedFlower('')
     setQuantity(1)
-    addToast(`${flower.name} adicionado ao orçamento`, 'success')
+    addToast(`${flower.nome} adicionado ao orçamento`, 'success')
   }
 
   const removeItem = (id) => {
     setBudgetItems(budgetItems.filter(item => item.id !== id))
   }
 
-  const totalMaterials = budgetItems.reduce((sum, item) => sum + item.subtotal, 0)
-  const laborCost = currencyTocents(costs.labor) / 100
-  const materialsCost = currencyTocents(costs.materials) / 100
-  const totalCost = totalMaterials + laborCost + materialsCost
-  const suggestedPrice = totalCost * 1.4
+  const totalPlants = budgetItems.reduce((sum, item) => sum + item.subtotal, 0)
+  const laborCost = currencyTocents(costs.labor) / 100 || 0
+  const materialsCost = currencyTocents(costs.materials) / 100 || 0
+  const totalCost = totalPlants + laborCost + materialsCost
+  const suggestedPrice = totalCost > 0 ? totalCost * 1.4 : 0
   const estimatedProfit = suggestedPrice - totalCost
   const profitMargin = suggestedPrice > 0 ? ((estimatedProfit / suggestedPrice) * 100).toFixed(1) : 0
 
-  const handleSaveBudget = () => {
+  const handleSaveBudget = async () => {
     if (!clientData.clientName || budgetItems.length === 0) {
       addToast('Preencha o cliente e adicione pelo menos uma planta', 'error')
       return
     }
 
-    addToast(`Orçamento para ${clientData.clientName} salvo! Valor: R$ ${suggestedPrice.toFixed(2)}`, 'success')
-    
-    setClientData({ clientName: '', projectType: 'residential' })
-    setBudgetItems([])
-    setCosts({ materials: '', labor: '' })
-    onClose()
+    try {
+      setLoading(true)
+      
+      const budgetData = {
+        clienteNome: clientData.clientName,
+        descricao: `Projeto ${clientData.projectType} - ${budgetItems.length} itens`,
+        totalCents: Math.round(suggestedPrice * 100),
+        status: 'pendente',
+        itens: budgetItems.map(item => ({
+          descricao: item.flowerName,
+          quantidade: item.quantity,
+          precoCents: Math.round(item.saleUnit * 100)
+        }))
+      }
+
+      const response = await budgetApi.create(budgetData)
+      
+      addToast(`Orçamento para ${clientData.clientName} salvo! Valor: R$ ${suggestedPrice.toFixed(2)}`, 'success')
+      notifyDataChanged('orcamentos')
+      
+      setClientData({ clientName: '', projectType: 'residential' })
+      setBudgetItems([])
+      setCosts({ materials: '', labor: '' })
+      onClose()
+    } catch (error) {
+      addToast(getApiError(error, 'Erro ao salvar orçamento'), 'error')
+    } finally {
+      setLoading(false)
+    }
   }
 
   if (!isOpen) return null
@@ -115,18 +210,33 @@ export function BudgetBuilderModal({ isOpen, onClose, flowers = [] }) {
                 </h3>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
+                  <div className="relative">
                     <label className="block text-sm font-semibold text-stone-700 mb-2">
                       Nome do Cliente *
                     </label>
                     <input
                       type="text"
-                      name="clientName"
                       value={clientData.clientName}
-                      onChange={handleClientChange}
+                      onChange={(e) => handleClientSearch(e.target.value)}
+                      onFocus={() => clientData.clientName && setShowClientSuggestions(true)}
                       placeholder="Ex: Dra. Sofia"
                       className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
                     />
+                    {showClientSuggestions && filteredClients.length > 0 && (
+                      <div className="absolute top-full left-0 right-0 mt-1 bg-white border-2 border-eden-primary rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto">
+                        {filteredClients.map((client) => (
+                          <button
+                            key={client.id}
+                            type="button"
+                            onClick={() => selectClient(client)}
+                            className="w-full text-left px-4 py-2 hover:bg-eden-primary/10 transition-colors border-b border-stone-100 last:border-b-0"
+                          >
+                            <div className="font-medium text-stone-900">{client.nome}</div>
+                            {client.email && <div className="text-xs text-stone-500">{client.email}</div>}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-stone-700 mb-2">
@@ -162,12 +272,13 @@ export function BudgetBuilderModal({ isOpen, onClose, flowers = [] }) {
                     <select
                       value={selectedFlower}
                       onChange={(e) => setSelectedFlower(e.target.value)}
-                      className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
+                      disabled={loading}
+                      className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20 disabled:bg-stone-100"
                     >
                       <option value="">-- Selecione --</option>
                       {flowers.map(flower => (
                         <option key={flower.id} value={flower.id}>
-                          {flower.name} - R$ {flower.price.toFixed(2)}
+                          {flower.nome} - R$ {((flower.precoCents || 0) / 100).toFixed(2)}
                         </option>
                       ))}
                     </select>
@@ -179,7 +290,7 @@ export function BudgetBuilderModal({ isOpen, onClose, flowers = [] }) {
                     <input
                       type="number"
                       value={quantity}
-                      onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
+                      onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
                       min="1"
                       className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
                     />
@@ -188,7 +299,8 @@ export function BudgetBuilderModal({ isOpen, onClose, flowers = [] }) {
                     <button
                       type="button"
                       onClick={addItem}
-                      className="w-full px-4 py-3 bg-eden-primary text-white rounded-lg hover:bg-eden-light transition-colors font-semibold flex items-center justify-center gap-2"
+                      disabled={loading}
+                      className="w-full px-4 py-3 bg-eden-primary text-white rounded-lg hover:bg-eden-light transition-colors font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
                     >
                       <i className="fa-solid fa-plus"></i>
                       Adicionar
@@ -201,23 +313,26 @@ export function BudgetBuilderModal({ isOpen, onClose, flowers = [] }) {
               {budgetItems.length > 0 && (
                 <div className="bg-white border-2 border-stone-200 rounded-lg overflow-hidden">
                   <div className="p-4 bg-stone-50 border-b border-stone-200">
-                    <h3 className="font-bold text-stone-900">Itens do Orçamento</h3>
+                    <h3 className="font-bold text-stone-900 flex items-center gap-2">
+                      <i className="fa-solid fa-list"></i>
+                      Itens do Orçamento ({budgetItems.length})
+                    </h3>
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead className="bg-stone-50 border-b border-stone-200">
                         <tr>
-                          <th className="px-4 py-2 text-left font-semibold text-stone-700">Planta</th>
-                          <th className="px-4 py-2 text-center font-semibold text-stone-700">Qtd</th>
-                          <th className="px-4 py-2 text-right font-semibold text-stone-700">Unit.</th>
-                          <th className="px-4 py-2 text-right font-semibold text-stone-700">Subtotal</th>
-                          <th className="px-4 py-2 text-center font-semibold text-stone-700">Ação</th>
+                          <th className="px-4 py-3 text-left font-semibold text-stone-700">Planta</th>
+                          <th className="px-4 py-3 text-center font-semibold text-stone-700">Qtd</th>
+                          <th className="px-4 py-3 text-right font-semibold text-stone-700">Unit.</th>
+                          <th className="px-4 py-3 text-right font-semibold text-stone-700">Subtotal</th>
+                          <th className="px-4 py-3 text-center font-semibold text-stone-700">Ação</th>
                         </tr>
                       </thead>
                       <tbody>
                         {budgetItems.map(item => (
                           <tr key={item.id} className="border-b border-stone-200 hover:bg-stone-50">
-                            <td className="px-4 py-3 text-stone-900">{item.flower}</td>
+                            <td className="px-4 py-3 text-stone-900">{item.flowerName}</td>
                             <td className="px-4 py-3 text-center text-stone-600">{item.quantity}</td>
                             <td className="px-4 py-3 text-right text-stone-600">R$ {item.saleUnit.toFixed(2)}</td>
                             <td className="px-4 py-3 text-right font-semibold text-eden-primary">R$ {item.subtotal.toFixed(2)}</td>
@@ -233,6 +348,13 @@ export function BudgetBuilderModal({ isOpen, onClose, flowers = [] }) {
                           </tr>
                         ))}
                       </tbody>
+                      <tfoot className="bg-stone-50 border-t-2 border-stone-200">
+                        <tr>
+                          <td colSpan="3" className="px-4 py-3 text-right font-bold text-stone-900">Total de Plantas:</td>
+                          <td className="px-4 py-3 text-right font-bold text-lg text-eden-primary">R$ {totalPlants.toFixed(2)}</td>
+                          <td></td>
+                        </tr>
+                      </tfoot>
                     </table>
                   </div>
                 </div>
@@ -251,13 +373,11 @@ export function BudgetBuilderModal({ isOpen, onClose, flowers = [] }) {
                       Insumos (Terra, Adubo, etc) - R$
                     </label>
                     <input
-                      type="number"
+                      type="text"
                       name="materials"
                       value={costs.materials}
                       onChange={handleCostChange}
-                      placeholder="0.00"
-                      step="0.01"
-                      min="0"
+                      placeholder="0,00"
                       className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
                     />
                   </div>
@@ -266,13 +386,11 @@ export function BudgetBuilderModal({ isOpen, onClose, flowers = [] }) {
                       Mão de Obra / Equipe - R$
                     </label>
                     <input
-                      type="number"
+                      type="text"
                       name="labor"
                       value={costs.labor}
                       onChange={handleCostChange}
-                      placeholder="0.00"
-                      step="0.01"
-                      min="0"
+                      placeholder="0,00"
                       className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
                     />
                   </div>
@@ -281,7 +399,7 @@ export function BudgetBuilderModal({ isOpen, onClose, flowers = [] }) {
             </div>
 
             {/* Right Column - Summary */}
-            <div className="bg-gradient-to-br from-eden-accent-light to-eden-accent p-6 rounded-lg border-2 border-eden-primary h-fit sticky top-0">
+            <div className="bg-gradient-to-br from-eden-accent-light to-eden-accent p-6 rounded-lg border-2 border-eden-primary h-fit sticky top-20">
               <h3 className="font-bold text-eden-primary text-lg mb-6 flex items-center gap-2">
                 <i className="fa-solid fa-calculator"></i>
                 Resumo Financeiro
@@ -290,7 +408,7 @@ export function BudgetBuilderModal({ isOpen, onClose, flowers = [] }) {
               <div className="space-y-4">
                 <div className="flex justify-between pb-3 border-b-2 border-eden-primary/30">
                   <span className="text-stone-700">Plantas:</span>
-                  <span className="font-semibold text-stone-900">R$ {totalMaterials.toFixed(2)}</span>
+                  <span className="font-semibold text-stone-900">R$ {totalPlants.toFixed(2)}</span>
                 </div>
 
                 <div className="flex justify-between pb-3 border-b-2 border-eden-primary/30">
@@ -309,7 +427,7 @@ export function BudgetBuilderModal({ isOpen, onClose, flowers = [] }) {
                 </div>
 
                 <div className="bg-white p-4 rounded-lg">
-                  <p className="text-xs text-stone-600 mb-2">Valor Final Sugerido:</p>
+                  <p className="text-xs text-stone-600 mb-2">Valor Final Sugerido (40% markup):</p>
                   <p className="text-3xl font-bold text-eden-primary">R$ {suggestedPrice.toFixed(2)}</p>
                 </div>
 
@@ -327,17 +445,19 @@ export function BudgetBuilderModal({ isOpen, onClose, flowers = [] }) {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-6 py-3 bg-stone-200 text-stone-700 rounded-lg hover:bg-stone-300 transition-colors font-semibold"
+              disabled={loading}
+              className="flex-1 px-6 py-3 bg-stone-200 text-stone-700 rounded-lg hover:bg-stone-300 transition-colors font-semibold disabled:opacity-50"
             >
               Cancelar
             </button>
             <button
               type="button"
               onClick={handleSaveBudget}
-              className="flex-1 px-6 py-3 bg-gradient-to-r from-eden-primary to-eden-light text-white rounded-lg hover:shadow-lg transition-all font-semibold flex items-center justify-center gap-2"
+              disabled={loading || budgetItems.length === 0}
+              className="flex-1 px-6 py-3 bg-gradient-to-r from-eden-primary to-eden-light text-white rounded-lg hover:shadow-lg transition-all font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
             >
               <i className="fa-solid fa-check"></i>
-              Finalizar & Salvar
+              {loading ? 'Salvando...' : 'Finalizar & Salvar'}
             </button>
           </div>
         </div>
