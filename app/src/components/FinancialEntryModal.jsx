@@ -58,7 +58,8 @@ export function FinancialEntryModal({ isOpen, onClose }) {
         descricao: formData.description,
         categoria: formData.category,
         valorCents: currencyTocents(formData.value),
-        data: new Date().toISOString().slice(0, 10)
+        data: new Date().toISOString().slice(0, 10),
+        origem: formData.origin || null
       })
       addToast(`${typeLabel} de R$ ${parseFloat(formData.value).toFixed(2)} registrada com sucesso!`, 'success')
       notifyDataChanged('financeiro')
@@ -152,13 +153,11 @@ export function FinancialEntryModal({ isOpen, onClose }) {
               Valor (R$)
             </label>
             <input
-              type="number"
+              type="text"
               name="value"
               value={formData.value}
               onChange={handleChange}
-              placeholder="0.00"
-              step="0.01"
-              min="0"
+              placeholder="0,00"
               className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
             />
           </div>

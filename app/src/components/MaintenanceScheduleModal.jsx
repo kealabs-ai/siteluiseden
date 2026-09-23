@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useToast } from '../ToastContext'
-import { getApiError, maintenanceApi, notifyDataChanged } from '../services/api'
+import { getApiError, maintenanceApi, notifyDataChanged, clientsApi } from '../services/api'
 import { masks, currencyTocents } from '../utils/inputMasks'
 
 export function MaintenanceScheduleModal({ isOpen, onClose }) {
@@ -14,6 +14,51 @@ export function MaintenanceScheduleModal({ isOpen, onClose }) {
     team: '',
     observations: ''
   })
+  const [clients, setClients] = useState([])
+  const [filteredClients, setFilteredClients] = useState([])
+  const [showSuggestions, setShowSuggestions] = useState(false)
+
+  useEffect(() => {
+    if (isOpen) {
+      loadClients()
+    }
+  }, [isOpen])
+
+  const loadClients = async () => {
+    try {
+      const { data } = await clientsApi.list()
+      setClients(data || [])
+    } catch (error) {
+      console.error('Erro ao carregar clientes:', error)
+    }
+  }
+
+  const handleClientSearch = (value) => {
+    setFormData(prev => ({
+      ...prev,
+      clientName: value
+    }))
+
+    if (value.length > 0) {
+      const filtered = clients.filter(client =>
+        (client.nome || '').toLowerCase().includes(value.toLowerCase()) ||
+        (client.endereco || '').toLowerCase().includes(value.toLowerCase())
+      )
+      setFilteredClients(filtered)
+      setShowSuggestions(true)
+    } else {
+      setFilteredClients([])
+      setShowSuggestions(false)
+    }
+  }
+
+  const selectClient = (client) => {
+    setFormData(prev => ({
+      ...prev,
+      clientName: client.nome || ''
+    }))
+    setShowSuggestions(false)
+  }
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -48,7 +93,7 @@ export function MaintenanceScheduleModal({ isOpen, onClose }) {
     try {
       await maintenanceApi.create({
         titulo: formData.clientName,
-        descricao: formData.observations || `Serviço de manutenção (${frequencyLabel}) - Equipe ${formData.team}`,
+        descricao: formData.observations,
         dataAgendada: new Date(formData.scheduledDate).toISOString(),
         status: 'agendada',
         prioridade: formData.priority,
@@ -94,18 +139,33 @@ export function MaintenanceScheduleModal({ isOpen, onClose }) {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Left Column */}
             <div className="space-y-4">
-              <div>
+              <div className="relative">
                 <label className="block text-sm font-semibold text-stone-700 mb-2">
                   Nome do Cliente/Residência *
                 </label>
                 <input
                   type="text"
-                  name="clientName"
                   value={formData.clientName}
-                  onChange={handleChange}
+                  onChange={(e) => handleClientSearch(e.target.value)}
+                  onFocus={() => formData.clientName && setShowSuggestions(true)}
                   placeholder="Ex: Condomínio Verde"
                   className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
                 />
+                {showSuggestions && filteredClients.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border-2 border-eden-primary rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto">
+                    {filteredClients.map((client) => (
+                      <button
+                        key={client.id}
+                        type="button"
+                        onClick={() => selectClient(client)}
+                        className="w-full text-left px-4 py-2 hover:bg-eden-primary/10 transition-colors border-b border-stone-100 last:border-b-0"
+                      >
+                        <div className="font-medium text-stone-900">{client.nome}</div>
+                        {client.endereco && <div className="text-xs text-stone-500">{client.endereco}</div>}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div>

@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react'
 import { useModal } from '../../../ModalContext'
-import { financeApi, getApiError, salesApi } from '../../../services/api'
+import { financeApi, getApiError, salesApi, notifyDataChanged } from '../../../services/api'
 import { useToast } from '../../../ToastContext'
+import { ConfirmationModal } from '../../../components/ConfirmationModal'
 
 export default function CashFlow() {
   const [transactions, setTransactions] = useState([])
   const [sales, setSales] = useState([])
+  const [confirmDelete, setConfirmDelete] = useState({ isOpen: false, transactionId: null })
   const { addToast } = useToast()
 
   const loadTransactions = async () => {
@@ -130,7 +132,7 @@ export default function CashFlow() {
                       <button onClick={() => openModal('editTransaction', transaction)} className="text-eden-primary hover:text-eden-light transition-colors mr-3">
                         <i className="fa-solid fa-edit"></i>
                       </button>
-                      <button onClick={async () => { await financeApi.remove(transaction.id); loadTransactions() }} className="text-red-600 hover:text-red-700 transition-colors">
+                      <button onClick={() => setConfirmDelete({ isOpen: true, transactionId: transaction.id })} className="text-red-600 hover:text-red-700 transition-colors">
                         <i className="fa-solid fa-trash"></i>
                       </button>
                     </td>
@@ -140,6 +142,27 @@ export default function CashFlow() {
             </table>
           </div>
         </div>
+
+        <ConfirmationModal
+          isOpen={confirmDelete.isOpen}
+          title="Excluir Transação"
+          message="Tem certeza que deseja excluir esta transação? Esta ação não pode ser desfeita."
+          confirmText="Excluir"
+          cancelText="Cancelar"
+          isDangerous={true}
+          onConfirm={async () => {
+            try {
+              await financeApi.remove(confirmDelete.transactionId)
+              addToast('Transação excluída com sucesso!', 'success')
+              notifyDataChanged('financeiro')
+              loadTransactions()
+            } catch (error) {
+              addToast(getApiError(error, 'Não foi possível excluir a transação.'), 'error')
+            }
+            setConfirmDelete({ isOpen: false, transactionId: null })
+          }}
+          onCancel={() => setConfirmDelete({ isOpen: false, transactionId: null })}
+        />
       </main>
     </div>
   )

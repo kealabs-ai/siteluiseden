@@ -1,58 +1,118 @@
 import React, { useState, useEffect } from 'react'
 import { useToast } from '../ToastContext'
-import { getApiError, maintenanceApi, notifyDataChanged } from '../services/api'
+import { getApiError, maintenanceApi, notifyDataChanged, clientsApi } from '../services/api'
+import { masks, currencyTocents } from '../utils/inputMasks'
 
 export function EditMaintenanceModal({ isOpen, onClose, maintenanceData = {} }) {
   const { addToast } = useToast()
   const [formData, setFormData] = useState({
-    client: '',
-    service: '',
-    date: new Date().toISOString().split('T')[0],
+    clientName: '',
+    serviceValue: '',
+    frequency: 'monthly',
+    scheduledDate: '',
     priority: 'normal',
-    status: 'scheduled',
     team: '',
-    notes: ''
+    observations: '',
+    status: 'agendada'
   })
+  const [clients, setClients] = useState([])
+  const [filteredClients, setFilteredClients] = useState([])
+  const [showSuggestions, setShowSuggestions] = useState(false)
 
   useEffect(() => {
-    if (maintenanceData && maintenanceData.id) {
-      setFormData({
-        client: maintenanceData.client || '',
-        service: maintenanceData.service || '',
-        date: maintenanceData.date ? new Date(maintenanceData.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-        priority: maintenanceData.priority || 'normal',
-        status: maintenanceData.status || 'scheduled',
-        team: maintenanceData.team || '',
-        notes: maintenanceData.notes || ''
-      })
+    if (isOpen) {
+      loadClients()
+      if (maintenanceData && maintenanceData.id) {
+        setFormData({
+          clientName: maintenanceData.titulo || '',
+          serviceValue: maintenanceData.valorCents ? (maintenanceData.valorCents / 100).toFixed(2).replace('.', ',') : '',
+          frequency: maintenanceData.frequencia || 'monthly',
+          scheduledDate: maintenanceData.dataAgendada ? new Date(maintenanceData.dataAgendada).toISOString().split('T')[0] : '',
+          priority: maintenanceData.prioridade || 'normal',
+          team: maintenanceData.equipe || '',
+          observations: maintenanceData.descricao || '',
+          status: maintenanceData.status || 'agendada'
+        })
+      }
     }
   }, [maintenanceData, isOpen])
 
-  const handleChange = (e) => {
-    const { name, value } = e.target
+  const loadClients = async () => {
+    try {
+      const { data } = await clientsApi.list()
+      setClients(data || [])
+    } catch (error) {
+      console.error('Erro ao carregar clientes:', error)
+    }
+  }
+
+  const handleClientSearch = (value) => {
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      clientName: value
+    }))
+
+    if (value.length > 0) {
+      const filtered = clients.filter(client =>
+        (client.nome || '').toLowerCase().includes(value.toLowerCase()) ||
+        (client.endereco || '').toLowerCase().includes(value.toLowerCase())
+      )
+      setFilteredClients(filtered)
+      setShowSuggestions(true)
+    } else {
+      setFilteredClients([])
+      setShowSuggestions(false)
+    }
+  }
+
+  const selectClient = (client) => {
+    setFormData(prev => ({
+      ...prev,
+      clientName: client.nome || ''
+    }))
+    setShowSuggestions(false)
+  }
+
+  const handleChange = (e) => {
+    const { name, value } = e.target
+    let maskedValue = value
+
+    if (name === 'serviceValue') {
+      maskedValue = masks.currency(value)
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      [name]: maskedValue
     }))
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     
-    if (!formData.client || !formData.service || !formData.date) {
+    if (!formData.clientName || !formData.serviceValue || !formData.scheduledDate || !formData.team) {
       addToast('Preencha todos os campos obrigatórios', 'error')
       return
     }
 
     try {
-      await maintenanceApi.update({ id: maintenanceData.id, titulo: formData.client, descricao: formData.service, dataAgendada: formData.date, status: formData.status === 'scheduled' ? 'agendada' : formData.status })
-      addToast(`Manutenção para ${formData.client} atualizada com sucesso!`, 'success')
+      await maintenanceApi.update({
+        id: maintenanceData.id,
+        titulo: formData.clientName,
+        descricao: formData.observations,
+        dataAgendada: new Date(formData.scheduledDate).toISOString(),
+        status: formData.status,
+        prioridade: formData.priority,
+        frequencia: formData.frequency,
+        valorCents: currencyTocents(formData.serviceValue),
+        equipe: formData.team
+      })
+      addToast(`Manutenção para ${formData.clientName} atualizada com sucesso!`, 'success')
       notifyDataChanged('manutencao')
+      onClose()
     } catch (error) {
       addToast(getApiError(error, 'Não foi possível atualizar a manutenção.'), 'error')
-      return
     }
-    onClose()
   }
 
   if (!isOpen) return null
@@ -75,67 +135,52 @@ export function EditMaintenanceModal({ isOpen, onClose, maintenanceData = {} }) 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Left Column */}
             <div className="space-y-4">
-              <div>
+              <div className="relative">
                 <label className="block text-sm font-semibold text-stone-700 mb-2">
-                  Cliente *
+                  Nome do Cliente/Residência *
                 </label>
                 <input
                   type="text"
-                  name="client"
-                  value={formData.client}
-                  onChange={handleChange}
+                  value={formData.clientName}
+                  onChange={(e) => handleClientSearch(e.target.value)}
+                  onFocus={() => formData.clientName && setShowSuggestions(true)}
                   placeholder="Ex: Condomínio Verde"
                   className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
                 />
+                {showSuggestions && filteredClients.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border-2 border-eden-primary rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto">
+                    {filteredClients.map((client) => (
+                      <button
+                        key={client.id}
+                        type="button"
+                        onClick={() => selectClient(client)}
+                        className="w-full text-left px-4 py-2 hover:bg-eden-primary/10 transition-colors border-b border-stone-100 last:border-b-0"
+                      >
+                        <div className="font-medium text-stone-900">{client.nome}</div>
+                        {client.endereco && <div className="text-xs text-stone-500">{client.endereco}</div>}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div>
                 <label className="block text-sm font-semibold text-stone-700 mb-2">
-                  Serviço *
+                  Valor do Serviço (R$) *
                 </label>
                 <input
                   type="text"
-                  name="service"
-                  value={formData.service}
+                  name="serviceValue"
+                  value={formData.serviceValue}
                   onChange={handleChange}
-                  placeholder="Ex: Poda de Plantas"
+                  placeholder="0,00"
                   className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-semibold text-stone-700 mb-2">
-                  Data *
-                </label>
-                <input
-                  type="date"
-                  name="date"
-                  value={formData.date}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-stone-700 mb-2">
-                  Equipe
-                </label>
-                <input
-                  type="text"
-                  name="team"
-                  value={formData.team}
-                  onChange={handleChange}
-                  placeholder="Ex: João, Maria"
-                  className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
-                />
-              </div>
-            </div>
-
-            {/* Right Column */}
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-semibold text-stone-700 mb-2">
-                  Prioridade
+                  Prioridade *
                 </label>
                 <select
                   name="priority"
@@ -151,7 +196,61 @@ export function EditMaintenanceModal({ isOpen, onClose, maintenanceData = {} }) 
 
               <div>
                 <label className="block text-sm font-semibold text-stone-700 mb-2">
-                  Status
+                  Frequência *
+                </label>
+                <select
+                  name="frequency"
+                  value={formData.frequency}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
+                >
+                  <option value="weekly">Semanal</option>
+                  <option value="biweekly">Quinzenal</option>
+                  <option value="monthly">Mensal</option>
+                  <option value="quarterly">Trimestral</option>
+                  <option value="custom">Avulsa</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">
+                  Data Agendada *
+                </label>
+                <input
+                  type="date"
+                  name="scheduledDate"
+                  value={formData.scheduledDate}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
+                />
+              </div>
+            </div>
+
+            {/* Right Column */}
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">
+                  Equipe Responsável *
+                </label>
+                <select
+                  name="team"
+                  value={formData.team}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
+                >
+                  <option value="">-- Selecione a equipe --</option>
+                  <option value="carlos">Carlos</option>
+                  <option value="maria">Maria</option>
+                  <option value="joao">João</option>
+                  <option value="ana">Ana</option>
+                  <option value="team_a">Equipe A</option>
+                  <option value="team_b">Equipe B</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">
+                  Status *
                 </label>
                 <select
                   name="status"
@@ -159,24 +258,55 @@ export function EditMaintenanceModal({ isOpen, onClose, maintenanceData = {} }) 
                   onChange={handleChange}
                   className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
                 >
-                  <option value="scheduled">Agendado</option>
-                  <option value="in_progress">Em Progresso</option>
-                  <option value="completed">Concluído</option>
+                  <option value="agendada">Agendada</option>
+                  <option value="em_progresso">Em Progresso</option>
+                  <option value="concluida">Concluída</option>
                 </select>
               </div>
 
               <div>
                 <label className="block text-sm font-semibold text-stone-700 mb-2">
-                  Observações
+                  Observações Técnicas
                 </label>
                 <textarea
-                  name="notes"
-                  value={formData.notes}
+                  name="observations"
+                  value={formData.observations}
                   onChange={handleChange}
-                  placeholder="Adicione observações sobre a manutenção..."
-                  rows="3"
-                  className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20"
+                  placeholder="Ex: Poda de rosas, adubação, irrigação..."
+                  rows="4"
+                  className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20 resize-none"
                 />
+              </div>
+
+              {/* Service Summary */}
+              <div className="bg-stone-50 p-4 rounded-lg border-2 border-stone-200">
+                <h3 className="font-bold text-stone-900 text-sm mb-3">Resumo do Serviço</h3>
+                
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-stone-600">Valor Serviço:</span>
+                    <span className="font-semibold text-eden-primary">
+                      R$ {(currencyTocents(formData.serviceValue) / 100 || 0).toFixed(2)}
+                    </span>
+                  </div>
+                  
+                  <div className="flex justify-between">
+                    <span className="text-stone-600">Frequência:</span>
+                    <span className="font-semibold text-stone-900">
+                      {formData.frequency === 'weekly' ? 'Semanal' :
+                       formData.frequency === 'biweekly' ? 'Quinzenal' :
+                       formData.frequency === 'monthly' ? 'Mensal' :
+                       formData.frequency === 'quarterly' ? 'Trimestral' : 'Avulsa'}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between pt-2 border-t border-stone-200">
+                    <span className="text-stone-600 font-semibold">Receita Anual Est.:</span>
+                    <span className="font-bold text-green-600">
+                      R$ {(currencyTocents(formData.serviceValue) / 100 * 12 || 0).toFixed(2)}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
