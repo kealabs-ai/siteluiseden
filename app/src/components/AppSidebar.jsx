@@ -6,7 +6,7 @@ function AppSidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const user = JSON.parse(localStorage.getItem('user') || '{}')
   const permissions = user.role === 'admin'
-    ? ['dashboard', 'catalog', 'sales', 'budget', 'cashflow', 'maintenance', 'supplier', 'clients', 'users']
+    ? ['dashboard', 'catalog', 'sales', 'budget', 'cashflow', 'maintenance', 'supplier', 'clients', 'users', 'fiscal']
     : user.permissoes || ['dashboard']
 
   const modules = [
@@ -72,6 +72,13 @@ function AppSidebar() {
       icon: 'fa-users-gear',
       path: '/users',
       color: 'from-teal-500 to-teal-600'
+    },
+    {
+      id: 'fiscal',
+      label: 'Gestão Fiscal',
+      icon: 'fa-file-invoice',
+      path: '/fiscal',
+      color: 'from-emerald-500 to-emerald-600'
     }
   ]
 

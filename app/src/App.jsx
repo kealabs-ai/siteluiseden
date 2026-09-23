@@ -17,11 +17,13 @@ import MaintenanceSchedule from './modules/maintenance/pages/MaintenanceSchedule
 import Supplier from './modules/supplier/pages/Supplier'
 import Clients from './modules/clients/pages/Clients'
 import Users from './modules/users/pages/Users'
+import Fiscal from './modules/fiscal/pages/Fiscal'
 
 // Componentes Compartilhados
 import Navigation from './components/Navigation'
 import AppNavigation from './components/AppNavigation'
 import AppSidebar from './components/AppSidebar'
+import ModalRenderer from './ModalRenderer'
 
 // Páginas
 import Home from './pages/Home'
@@ -41,7 +43,7 @@ function ProtectedRoute({ isLoggedIn, permission, children }) {
 function AppContent({ isLoggedIn, setIsLoggedIn }) {
   const location = useLocation()
   const isLoginPage = location.pathname === '/login'
-  const isAppPage = location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/cash-flow') || location.pathname.startsWith('/sales') || location.pathname.startsWith('/catalog') || location.pathname.startsWith('/landscaping-budget') || location.pathname.startsWith('/maintenance-schedule') || location.pathname.startsWith('/supplier') || location.pathname.startsWith('/clients') || location.pathname.startsWith('/users')
+  const isAppPage = location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/cash-flow') || location.pathname.startsWith('/sales') || location.pathname.startsWith('/catalog') || location.pathname.startsWith('/landscaping-budget') || location.pathname.startsWith('/maintenance-schedule') || location.pathname.startsWith('/supplier') || location.pathname.startsWith('/clients') || location.pathname.startsWith('/users') || location.pathname.startsWith('/fiscal')
 
   return (
     <div className="app">
@@ -137,6 +139,15 @@ function AppContent({ isLoggedIn, setIsLoggedIn }) {
             }
           />
 
+          <Route
+            path="/fiscal"
+            element={
+              <ProtectedRoute isLoggedIn={isLoggedIn}>
+                <Fiscal />
+              </ProtectedRoute>
+            }
+          />
+
           {/* Rota 404 */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
@@ -155,6 +166,7 @@ function App() {
     <ToastProvider>
       <Router>
         <ModalProvider>
+          <ModalRenderer />
           <AppContent isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
         </ModalProvider>
       </Router>

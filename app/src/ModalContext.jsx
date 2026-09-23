@@ -23,7 +23,14 @@ export function ModalProvider({ children }) {
     editQuotation: false,
     newClient: false,
     editClient: false,
-    confirmation: false
+    confirmation: false,
+    createNFe: false,
+    viewNFe: false,
+    signNFe: false,
+    authorizeNFe: false,
+    cancelNFe: false,
+    configFiscal: false,
+    deleteNFe: false
   })
 
   const [modalData, setModalData] = useState({})
@@ -38,13 +45,26 @@ export function ModalProvider({ children }) {
   })
 
   const openModal = (modalName, data = {}) => {
-    setModals(prev => ({ ...prev, [modalName]: true }))
-    setModalData(prev => ({ ...prev, [modalName]: data }))
+    // Fechar todos os outros modais
+    setModals(prev => {
+      const newModals = {}
+      Object.keys(prev).forEach(key => {
+        newModals[key] = key === modalName
+      })
+      return newModals
+    })
+    setModalData(data)
   }
 
-  const closeModal = (modalName) => {
-    setModals(prev => ({ ...prev, [modalName]: false }))
-    setModalData(prev => ({ ...prev, [modalName]: {} }))
+  const closeModal = () => {
+    setModals(prev => {
+      const newModals = { ...prev }
+      Object.keys(newModals).forEach(key => {
+        if (key !== 'confirmation') newModals[key] = false
+      })
+      return newModals
+    })
+    setModalData({})
   }
 
   const openConfirmation = (title, message, onConfirm, onCancel, options = {}) => {
