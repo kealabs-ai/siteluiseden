@@ -19,6 +19,7 @@ export function QuickSaleModal({ isOpen, onClose, flowers = [] }) {
   const [clientsError, setClientsError] = useState('')
   const [clientSearch, setClientSearch] = useState('')
   const [showClientDropdown, setShowClientDropdown] = useState(false)
+  const [isFullscreen, setIsFullscreen] = useState(false)
   const [formData, setFormData] = useState({
     client: '',
     clientId: '',
@@ -175,17 +176,22 @@ export function QuickSaleModal({ isOpen, onClose, flowers = [] }) {
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div className={`fixed inset-0 bg-black/50 z-50 flex items-center justify-center ${isFullscreen ? 'p-0' : 'p-4'}`}>
+      <div className={`bg-white ${isFullscreen ? 'w-full h-full' : 'rounded-xl max-w-2xl w-full max-h-[90vh]'} overflow-y-auto`}>
         {/* Header */}
         <div className="sticky top-0 bg-gradient-to-r from-eden-primary to-eden-light text-white p-6 flex items-center justify-between">
           <h2 className="text-2xl font-bold flex items-center gap-2">
             <i className="fa-solid fa-shopping-cart"></i>
             Nova Venda Rápida
           </h2>
-          <button onClick={onClose} className="hover:opacity-80 transition-opacity">
-            <i className="fa-solid fa-times text-2xl"></i>
-          </button>
+          <div className="flex items-center gap-3">
+            <button onClick={() => setIsFullscreen(!isFullscreen)} className="hover:opacity-80 transition-opacity" title={isFullscreen ? 'Sair de tela cheia' : 'Tela cheia'}>
+              <i className={`fa-solid ${isFullscreen ? 'fa-compress' : 'fa-expand'} text-2xl`}></i>
+            </button>
+            <button onClick={onClose} className="hover:opacity-80 transition-opacity">
+              <i className="fa-solid fa-times text-2xl"></i>
+            </button>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
