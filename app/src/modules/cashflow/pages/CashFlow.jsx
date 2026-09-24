@@ -3,6 +3,7 @@ import { useModal } from '../../../ModalContext'
 import { financeApi, getApiError, salesApi, notifyDataChanged } from '../../../services/api'
 import { useToast } from '../../../ToastContext'
 import { ConfirmationModal } from '../../../components/ConfirmationModal'
+import { formatCurrency } from '../../../utils/formatCurrency'
 
 export default function CashFlow() {
   const [transactions, setTransactions] = useState([])
@@ -60,7 +61,7 @@ export default function CashFlow() {
               <h3 className="text-sm font-medium text-stone-600">Total de Entradas</h3>
               <i className="fa-solid fa-arrow-up text-green-500 text-2xl"></i>
             </div>
-            <p className="text-3xl font-bold text-green-600">R$ {totalEntradas.toFixed(2)}</p>
+            <p className="text-3xl font-bold text-green-600">{formatCurrency(totalEntradas)}</p>
             <p className="text-xs text-stone-500 mt-2">Receitas</p>
           </div>
 
@@ -69,7 +70,7 @@ export default function CashFlow() {
               <h3 className="text-sm font-medium text-stone-600">Total de Saídas</h3>
               <i className="fa-solid fa-arrow-down text-red-500 text-2xl"></i>
             </div>
-            <p className="text-3xl font-bold text-red-600">R$ {totalSaidas.toFixed(2)}</p>
+            <p className="text-3xl font-bold text-red-600">{formatCurrency(totalSaidas)}</p>
             <p className="text-xs text-stone-500 mt-2">Despesas</p>
           </div>
 
@@ -79,7 +80,7 @@ export default function CashFlow() {
               <i className={`fa-solid fa-wallet text-2xl ${saldo >= 0 ? 'text-green-500' : 'text-red-500'}`}></i>
             </div>
             <p className={`text-3xl font-bold ${saldo >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              R$ {saldo.toFixed(2)}
+              {formatCurrency(saldo)}
             </p>
             <p className="text-xs text-stone-500 mt-2">Saldo atual</p>
           </div>
@@ -126,7 +127,7 @@ export default function CashFlow() {
                     <td className={`px-6 py-4 text-sm font-semibold ${
                       transaction.type === 'entrada' ? 'text-green-600' : 'text-red-600'
                     }`}>
-                      {transaction.type === 'entrada' ? '+' : '-'} R$ {transaction.amount.toFixed(2)}
+                      {transaction.type === 'entrada' ? '+' : '-'} {formatCurrency(transaction.amount)}
                     </td>
                     <td className="px-6 py-4 text-sm">
                       <button onClick={() => openModal('editTransaction', transaction)} className="text-eden-primary hover:text-eden-light transition-colors mr-3">

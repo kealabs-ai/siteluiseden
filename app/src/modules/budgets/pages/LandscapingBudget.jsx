@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useModal } from '../../../ModalContext'
 import { budgetApi, getApiError } from '../../../services/api'
 import { useToast } from '../../../ToastContext'
+import { formatCurrency } from '../../../utils/formatCurrency'
 
 export default function LandscapingBudget() {
   const [budgets, setBudgets] = useState([])
@@ -85,7 +86,7 @@ export default function LandscapingBudget() {
               <h3 className="text-sm font-medium text-stone-600">Total de Orçamentos</h3>
               <i className="fa-solid fa-file-invoice-dollar text-blue-500 text-2xl"></i>
             </div>
-            <p className="text-3xl font-bold text-eden-primary">R$ {totalBudgets.toFixed(2)}</p>
+            <p className="text-3xl font-bold text-eden-primary">{formatCurrency(totalBudgets)}</p>
             <p className="text-xs text-stone-500 mt-2">{budgets.length} orçamentos</p>
           </div>
 
@@ -94,7 +95,7 @@ export default function LandscapingBudget() {
               <h3 className="text-sm font-medium text-stone-600">Orçamentos Aprovados</h3>
               <i className="fa-solid fa-check-circle text-green-500 text-2xl"></i>
             </div>
-            <p className="text-3xl font-bold text-eden-primary">R$ {approvedBudgets.toFixed(2)}</p>
+            <p className="text-3xl font-bold text-eden-primary">{formatCurrency(approvedBudgets)}</p>
             <p className="text-xs text-stone-500 mt-2">Valor aprovado</p>
           </div>
 
@@ -139,7 +140,7 @@ export default function LandscapingBudget() {
                     <td className="px-6 py-4 text-sm font-medium text-stone-900">#{budget.id}</td>
                     <td className="px-6 py-4 text-sm text-stone-600">{budget.client}</td>
                     <td className="px-6 py-4 text-sm text-stone-600">{budget.project}</td>
-                    <td className="px-6 py-4 text-sm font-semibold text-eden-primary">R$ {budget.amount.toFixed(2)}</td>
+                    <td className="px-6 py-4 text-sm font-semibold text-eden-primary">{formatCurrency(budget.amount)}</td>
                     <td className="px-6 py-4 text-sm text-stone-600">{new Date(budget.date).toLocaleDateString('pt-BR')}</td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(budget.status)}`}>
