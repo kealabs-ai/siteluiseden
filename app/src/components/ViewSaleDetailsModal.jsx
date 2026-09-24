@@ -1,5 +1,6 @@
 import React from 'react'
 import { useToast } from '../ToastContext'
+import { formatCurrency } from '../utils/formatCurrency'
 
 export function ViewSaleDetailsModal({ isOpen, onClose, saleData = {} }) {
   const { showToast } = useToast()
@@ -59,7 +60,7 @@ export function ViewSaleDetailsModal({ isOpen, onClose, saleData = {} }) {
           <div className="bg-gradient-to-r from-eden-accent-light to-eden-accent rounded-lg p-4">
             <p className="text-sm text-stone-600 mb-1">Valor Total</p>
             <p className="text-3xl font-bold text-eden-primary">
-              R$ {saleData.amount ? saleData.amount.toFixed(2) : '0.00'}
+              {formatCurrency(saleData.amount || 0)}
             </p>
           </div>
 

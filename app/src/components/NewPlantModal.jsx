@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useToast } from '../ToastContext'
 import { catalogApi, getApiError, notifyDataChanged } from '../services/api'
 import { masks, currencyTocents } from '../utils/inputMasks'
+import { formatCurrency } from '../utils/formatCurrency'
 
 export function NewPlantModal({ isOpen, onClose }) {
   const { addToast } = useToast()
@@ -207,17 +208,17 @@ export function NewPlantModal({ isOpen, onClose }) {
                 
                 <div className="flex justify-between items-center pb-2 border-b border-stone-200">
                   <span className="text-xs text-stone-600">Custo:</span>
-                  <span className="font-semibold text-stone-900">R$ {cost.toFixed(2)}</span>
+                  <span className="font-semibold text-stone-900">{formatCurrency(cost)}</span>
                 </div>
 
                 <div className="flex justify-between items-center pb-2 border-b border-stone-200">
                   <span className="text-xs text-stone-600">Preço Venda:</span>
-                  <span className="font-semibold text-eden-primary">R$ {salePrice.toFixed(2)}</span>
+                  <span className="font-semibold text-eden-primary">{formatCurrency(salePrice)}</span>
                 </div>
 
                 <div className="flex justify-between items-center pb-2 border-b-2 border-eden-primary">
                   <span className="text-xs text-stone-600 font-semibold">Lucro Unit.:</span>
-                  <span className="font-bold text-green-600">R$ {(salePrice - cost).toFixed(2)}</span>
+                  <span className="font-bold text-green-600">{formatCurrency(salePrice - cost)}</span>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 pt-2">

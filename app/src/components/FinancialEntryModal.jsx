@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useToast } from '../ToastContext'
 import { financeApi, getApiError, notifyDataChanged } from '../services/api'
 import { masks, currencyTocents } from '../utils/inputMasks'
+import { formatCurrency } from '../utils/formatCurrency'
 
 export function FinancialEntryModal({ isOpen, onClose }) {
   const { addToast } = useToast()
@@ -61,7 +62,7 @@ export function FinancialEntryModal({ isOpen, onClose }) {
         data: new Date().toISOString().slice(0, 10),
         origem: formData.origin || null
       })
-      addToast(`${typeLabel} de R$ ${parseFloat(formData.value).toFixed(2)} registrada com sucesso!`, 'success')
+      addToast(`${typeLabel} de ${formatCurrency(parseFloat(formData.value))} registrada com sucesso!`, 'success')
       notifyDataChanged('financeiro')
     } catch (error) {
       addToast(getApiError(error, 'Não foi possível registrar a transação.'), 'error')

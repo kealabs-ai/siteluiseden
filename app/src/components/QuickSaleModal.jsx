@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useToast } from '../ToastContext'
 import { catalogApi, clientsApi, getApiError, notifyDataChanged, salesApi } from '../services/api'
 import { masks, currencyTocents } from '../utils/inputMasks'
+import { formatCurrency } from '../utils/formatCurrency'
 
 const getLocalDateTime = () => {
   const now = new Date()
@@ -258,7 +259,7 @@ export function QuickSaleModal({ isOpen, onClose, flowers = [] }) {
                   </option>
                   {availableFlowers.map(flower => (
                     <option key={flower.id} value={flower.id}>
-                      {flower.name} - R$ {flower.price.toFixed(2)}{flower.stock !== undefined ? ` (${flower.stock} em estoque)` : ''}
+                      {flower.name} - {formatCurrency(flower.price)}{flower.stock !== undefined ? ` (${flower.stock} em estoque)` : ''}
                     </option>
                   ))}
                 </select>
@@ -333,7 +334,7 @@ export function QuickSaleModal({ isOpen, onClose, flowers = [] }) {
                       <div key={item.id} className="flex items-center justify-between gap-3 pb-3 border-b border-stone-200">
                         <div className="min-w-0">
                           <p className="text-sm font-semibold text-stone-800 truncate">{item.quantity}x {item.name}</p>
-                          <p className="text-xs text-stone-500">R$ {(item.price * item.quantity).toFixed(2)}</p>
+                          <p className="text-xs text-stone-500">{formatCurrency(item.price * item.quantity)}</p>
                         </div>
                         <button
                           type="button"
@@ -352,7 +353,7 @@ export function QuickSaleModal({ isOpen, onClose, flowers = [] }) {
               <div className="space-y-4">
                 <div className="flex justify-between items-center pb-4 border-b border-stone-200">
                     <span className="text-stone-600">Subtotal:</span>
-                    <span className="text-lg font-semibold text-stone-900">R$ {subtotal.toFixed(2)}</span>
+                    <span className="text-lg font-semibold text-stone-900">{formatCurrency(subtotal)}</span>
                 </div>
 
                   <div>
@@ -377,12 +378,12 @@ export function QuickSaleModal({ isOpen, onClose, flowers = [] }) {
 
                   <div className="flex justify-between items-center pb-4 border-b border-stone-200">
                     <span className="text-stone-600">Desconto:</span>
-                    <span className="text-lg font-semibold text-red-600">- R$ {discountAmount.toFixed(2)}</span>
+                    <span className="text-lg font-semibold text-red-600">- {formatCurrency(discountAmount)}</span>
                   </div>
 
                   <div className="flex justify-between items-center pt-2 bg-white p-4 rounded-lg">
                     <span className="text-stone-600 font-semibold">Preço Final:</span>
-                    <span className="text-2xl font-bold text-eden-primary">R$ {saleTotal.toFixed(2)}</span>
+                    <span className="text-2xl font-bold text-eden-primary">{formatCurrency(saleTotal)}</span>
                   </div>
               </div>
 

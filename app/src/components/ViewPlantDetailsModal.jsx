@@ -1,9 +1,8 @@
 import React from 'react'
+import { formatCurrency } from '../utils/formatCurrency'
 
 export function ViewPlantDetailsModal({ isOpen, onClose, plantData = {} }) {
   if (!isOpen) return null
-
-  const formatCurrency = (value) => `R$ ${(Number(value) || 0).toFixed(2)}`
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useModal } from '../../../ModalContext'
 import { getApiError, salesApi } from '../../../services/api'
 import { useToast } from '../../../ToastContext'
+import { formatCurrency } from '../../../utils/formatCurrency'
 
 export default function Sales() {
   const [sales, setSales] = useState([])
@@ -95,7 +96,7 @@ export default function Sales() {
               <h3 className="text-sm font-medium text-stone-600">Total de Vendas</h3>
               <i className="fa-solid fa-shopping-cart text-green-500 text-2xl"></i>
             </div>
-            <p className="text-3xl font-bold text-eden-primary">R$ {totalSales.toFixed(2)}</p>
+            <p className="text-3xl font-bold text-eden-primary">{formatCurrency(totalSales)}</p>
             <p className="text-xs text-stone-500 mt-2">{filteredSales.length} transações</p>
           </div>
 
@@ -113,7 +114,7 @@ export default function Sales() {
               <h3 className="text-sm font-medium text-stone-600">Ticket Médio</h3>
               <i className="fa-solid fa-money-bill-wave text-blue-500 text-2xl"></i>
             </div>
-            <p className="text-3xl font-bold text-eden-primary">R$ {(totalSales / (filteredActiveSales.length || 1)).toFixed(2)}</p>
+            <p className="text-3xl font-bold text-eden-primary">{formatCurrency(totalSales / (filteredActiveSales.length || 1))}</p>
             <p className="text-xs text-stone-500 mt-2">Por venda</p>
           </div>
         </div>
@@ -183,7 +184,7 @@ export default function Sales() {
                     <td className="px-6 py-4 text-sm text-stone-600">{sale.client}</td>
                     <td className="px-6 py-4 text-sm text-stone-600">{sale.product}</td>
                     <td className="px-6 py-4 text-sm text-stone-600">{new Date(sale.date).toLocaleDateString('pt-BR')}</td>
-                    <td className="px-6 py-4 text-sm font-semibold text-eden-primary">R$ {sale.amount.toFixed(2)}</td>
+                    <td className="px-6 py-4 text-sm font-semibold text-eden-primary">{formatCurrency(sale.amount)}</td>
                     <td className="px-6 py-4 text-sm text-stone-600">{sale.payment}</td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(sale.status)}`}>

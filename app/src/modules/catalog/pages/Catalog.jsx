@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useModal } from '../../../ModalContext'
 import { catalogApi, getApiError } from '../../../services/api'
 import { useToast } from '../../../ToastContext'
+import { formatCurrency } from '../../../utils/formatCurrency'
 
 export default function Catalog() {
   const [activeTab, setActiveTab] = useState('flowers')
@@ -107,7 +108,7 @@ export default function Catalog() {
                     <h3 className="text-lg font-bold text-stone-900 mb-2">{flower.name}</h3>
                     <p className="text-sm text-stone-600 mb-4">{flower.category}</p>
                     <div className="flex items-center justify-between mb-4">
-                      <span className="text-2xl font-bold text-eden-primary">R$ {flower.price.toFixed(2)}</span>
+                      <span className="text-2xl font-bold text-eden-primary">{formatCurrency(flower.price)}</span>
                       <span className="text-sm bg-green-100 text-green-800 px-3 py-1 rounded-full">
                         {flower.stock} em estoque
                       </span>

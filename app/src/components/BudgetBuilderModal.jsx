@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useToast } from '../ToastContext'
 import { budgetApi, catalogApi, clientsApi, getApiError, notifyDataChanged } from '../services/api'
 import { masks, currencyTocents } from '../utils/inputMasks'
+import { formatCurrency } from '../utils/formatCurrency'
 
 export function BudgetBuilderModal({ isOpen, onClose }) {
   const { addToast } = useToast()
@@ -275,10 +276,12 @@ export function BudgetBuilderModal({ isOpen, onClose }) {
                       disabled={loading}
                       className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:outline-none focus:border-eden-primary focus:ring-2 focus:ring-eden-primary/20 disabled:bg-stone-100"
                     >
-                      <option value="">-- Selecione --</option>
+                      <option value="">
+                        {loading ? 'Carregando...' : '-- Selecione --'}
+                      </option>
                       {flowers.map(flower => (
                         <option key={flower.id} value={flower.id}>
-                          {flower.nome} - R$ {((flower.precoCents || 0) / 100).toFixed(2)}
+                          {flower.nome} - {formatCurrency((flower.precoCents || 0) / 100)}
                         </option>
                       ))}
                     </select>
@@ -334,8 +337,8 @@ export function BudgetBuilderModal({ isOpen, onClose }) {
                           <tr key={item.id} className="border-b border-stone-200 hover:bg-stone-50">
                             <td className="px-4 py-3 text-stone-900">{item.flowerName}</td>
                             <td className="px-4 py-3 text-center text-stone-600">{item.quantity}</td>
-                            <td className="px-4 py-3 text-right text-stone-600">R$ {item.saleUnit.toFixed(2)}</td>
-                            <td className="px-4 py-3 text-right font-semibold text-eden-primary">R$ {item.subtotal.toFixed(2)}</td>
+                            <td className="px-4 py-3 text-right text-stone-600">{formatCurrency(item.saleUnit)}</td>
+                            <td className="px-4 py-3 text-right font-semibold text-eden-primary">{formatCurrency(item.subtotal)}</td>
                             <td className="px-4 py-3 text-center">
                               <button
                                 type="button"
@@ -351,7 +354,7 @@ export function BudgetBuilderModal({ isOpen, onClose }) {
                       <tfoot className="bg-stone-50 border-t-2 border-stone-200">
                         <tr>
                           <td colSpan="3" className="px-4 py-3 text-right font-bold text-stone-900">Total de Plantas:</td>
-                          <td className="px-4 py-3 text-right font-bold text-lg text-eden-primary">R$ {totalPlants.toFixed(2)}</td>
+                          <td className="px-4 py-3 text-right font-bold text-lg text-eden-primary">{formatCurrency(totalPlants)}</td>
                           <td></td>
                         </tr>
                       </tfoot>
@@ -408,32 +411,32 @@ export function BudgetBuilderModal({ isOpen, onClose }) {
               <div className="space-y-4">
                 <div className="flex justify-between pb-3 border-b-2 border-eden-primary/30">
                   <span className="text-stone-700">Plantas:</span>
-                  <span className="font-semibold text-stone-900">R$ {totalPlants.toFixed(2)}</span>
+                  <span className="font-semibold text-stone-900">{formatCurrency(totalPlants)}</span>
                 </div>
 
                 <div className="flex justify-between pb-3 border-b-2 border-eden-primary/30">
                   <span className="text-stone-700">Insumos:</span>
-                  <span className="font-semibold text-stone-900">R$ {materialsCost.toFixed(2)}</span>
+                  <span className="font-semibold text-stone-900">{formatCurrency(materialsCost)}</span>
                 </div>
 
                 <div className="flex justify-between pb-3 border-b-2 border-eden-primary/30">
                   <span className="text-stone-700">Mão de Obra:</span>
-                  <span className="font-semibold text-stone-900">R$ {laborCost.toFixed(2)}</span>
+                  <span className="font-semibold text-stone-900">{formatCurrency(laborCost)}</span>
                 </div>
 
                 <div className="flex justify-between pb-3 border-b-2 border-eden-primary">
                   <span className="font-semibold text-stone-900">Custo Total:</span>
-                  <span className="font-bold text-lg text-stone-900">R$ {totalCost.toFixed(2)}</span>
+                  <span className="font-bold text-lg text-stone-900">{formatCurrency(totalCost)}</span>
                 </div>
 
                 <div className="bg-white p-4 rounded-lg">
                   <p className="text-xs text-stone-600 mb-2">Valor Final Sugerido (40% markup):</p>
-                  <p className="text-3xl font-bold text-eden-primary">R$ {suggestedPrice.toFixed(2)}</p>
+                  <p className="text-3xl font-bold text-eden-primary">{formatCurrency(suggestedPrice)}</p>
                 </div>
 
                 <div className="bg-white p-4 rounded-lg">
                   <p className="text-xs text-stone-600 mb-2">Lucro Estimado:</p>
-                  <p className="text-2xl font-bold text-green-600">R$ {estimatedProfit.toFixed(2)}</p>
+                  <p className="text-2xl font-bold text-green-600">{formatCurrency(estimatedProfit)}</p>
                   <p className="text-xs text-stone-600 mt-1">Margem: {profitMargin}%</p>
                 </div>
               </div>
