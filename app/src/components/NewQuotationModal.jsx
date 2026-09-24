@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useToast } from '../ToastContext'
 import { getApiError, notifyDataChanged, quotationApi, supplierApi } from '../services/api'
 import { masks, currencyTocents } from '../utils/inputMasks'
+import { formatCurrency } from '../utils/formatCurrency'
 
 export function NewQuotationModal({ isOpen, onClose }) {
   const { addToast } = useToast()
@@ -240,17 +241,17 @@ export function NewQuotationModal({ isOpen, onClose }) {
                 
                 <div className="flex justify-between items-center pb-2 border-b border-stone-200">
                   <span className="text-xs text-stone-600">Custo Unit.:</span>
-                  <span className="font-semibold text-stone-900">R$ {(currencyTocents(formData.costPrice) / 100).toFixed(2)}</span>
+                  <span className="font-semibold text-stone-900">{formatCurrency(currencyTocents(formData.costPrice) / 100)}</span>
                 </div>
 
                 <div className="flex justify-between items-center pb-2 border-b border-stone-200">
                   <span className="text-xs text-stone-600">Preço Venda:</span>
-                  <span className="font-semibold text-eden-primary">R$ {(currencyTocents(formData.salePrice) / 100).toFixed(2)}</span>
+                  <span className="font-semibold text-eden-primary">{formatCurrency(currencyTocents(formData.salePrice) / 100)}</span>
                 </div>
 
                 <div className="flex justify-between items-center pb-2 border-b-2 border-eden-primary">
                   <span className="text-xs text-stone-600 font-semibold">Lucro Unit.:</span>
-                  <span className="font-bold text-green-600">R$ {calculateProfit()}</span>
+                  <span className="font-bold text-green-600">{formatCurrency(parseFloat(calculateProfit()))}</span>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 pt-2">

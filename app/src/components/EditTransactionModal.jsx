@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useToast } from '../ToastContext'
 import { financeApi, getApiError, notifyDataChanged } from '../services/api'
 import { masks, currencyTocents } from '../utils/inputMasks'
+import { formatCurrency } from '../utils/formatCurrency'
 
 export function EditTransactionModal({ isOpen, onClose, transactionData = {} }) {
   const { addToast } = useToast()
@@ -166,7 +167,7 @@ export function EditTransactionModal({ isOpen, onClose, transactionData = {} }) 
                   {formData.type === 'entrada' ? 'Entrada' : 'Saída'}
                 </p>
                 <p className={`text-2xl font-bold ${formData.type === 'entrada' ? 'text-green-600' : 'text-red-600'}`}>
-                  {formData.type === 'entrada' ? '+' : '-'} R$ {parseFloat(formData.amount || 0).toFixed(2)}
+                  {formData.type === 'entrada' ? '+' : '-'} {formatCurrency(parseFloat(formData.amount || 0))}
                 </p>
               </div>
             </div>
