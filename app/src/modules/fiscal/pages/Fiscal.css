@@ -1,0 +1,265 @@
+/* Estilos do Módulo Fiscal */
+
+/* Containers */
+.fiscal-container {
+  min-height: 100vh;
+  background-color: #fafaf8;
+}
+
+/* Header */
+.fiscal-header {
+  margin-bottom: 2rem;
+}
+
+.fiscal-header h1 {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #2d5016;
+  font-family: 'Playfair Display', serif;
+}
+
+.fiscal-header p {
+  color: #78716c;
+  margin-top: 0.25rem;
+}
+
+/* KPI Grid */
+.fiscal-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.fiscal-kpi-card {
+  background: white;
+  border: 1px solid #e7e5e4;
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.fiscal-kpi-card p:first-child {
+  font-size: 0.75rem;
+  color: #78716c;
+  font-weight: 500;
+}
+
+.fiscal-kpi-card p:last-child {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2d5016;
+  margin-top: 0.25rem;
+}
+
+/* Status Badges */
+.fiscal-status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.fiscal-status-rascunho {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.fiscal-status-assinada {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.fiscal-status-autorizada {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.fiscal-status-rejeitada {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.fiscal-status-cancelada {
+  background-color: #fecaca;
+  color: #7f1d1d;
+}
+
+/* Table */
+.fiscal-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.fiscal-table thead {
+  background-color: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.fiscal-table th {
+  padding: 0.75rem 1.5rem;
+  text-align: left;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.fiscal-table tbody tr {
+  border-bottom: 1px solid #e5e7eb;
+  transition: background-color 0.2s;
+}
+
+.fiscal-table tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+.fiscal-table td {
+  padding: 1rem 1.5rem;
+  font-size: 0.875rem;
+  color: #4b5563;
+}
+
+/* Buttons */
+.fiscal-action-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.fiscal-action-btn-primary {
+  background-color: #2d5016;
+  color: white;
+}
+
+.fiscal-action-btn-primary:hover {
+  background-color: #4a7c2c;
+}
+
+.fiscal-action-btn-secondary {
+  background-color: #e5e7eb;
+  color: #374151;
+}
+
+.fiscal-action-btn-secondary:hover {
+  background-color: #d1d5db;
+}
+
+.fiscal-action-btn-danger {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.fiscal-action-btn-danger:hover {
+  background-color: #fecaca;
+}
+
+/* Modal */
+.fiscal-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.fiscal-modal-content {
+  background: white;
+  border-radius: 0.5rem;
+  padding: 2rem;
+  max-width: 600px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.fiscal-modal-header {
+  margin-bottom: 1.5rem;
+}
+
+.fiscal-modal-header h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2d5016;
+}
+
+.fiscal-modal-body {
+  margin-bottom: 1.5rem;
+}
+
+/* Form */
+.fiscal-form-group {
+  margin-bottom: 1rem;
+}
+
+.fiscal-form-group label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.fiscal-form-group input,
+.fiscal-form-group select,
+.fiscal-form-group textarea {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  box-sizing: border-box;
+}
+
+.fiscal-form-group input:focus,
+.fiscal-form-group select:focus,
+.fiscal-form-group textarea:focus {
+  outline: none;
+  border-color: #2d5016;
+  box-shadow: 0 0 0 3px rgba(45, 80, 22, 0.1);
+}
+
+.fiscal-modal-footer {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+/* SEFAZ Status */
+.fiscal-sefaz-status {
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+  border-left: 4px solid;
+}
+
+.fiscal-sefaz-status-online {
+  background-color: #f0fdf4;
+  border-left-color: #22c55e;
+  color: #166534;
+}
+
+.fiscal-sefaz-status-offline {
+  background-color: #fef2f2;
+  border-left-color: #ef4444;
+  color: #991b1b;
+}
+
+.fiscal-sefaz-status p:first-child {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.fiscal-sefaz-status p:last-child {
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
