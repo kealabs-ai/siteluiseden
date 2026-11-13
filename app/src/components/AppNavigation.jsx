@@ -21,6 +21,7 @@ import { EditQuotationModal } from './EditQuotationModal'
 import { NewClientModal } from './NewClientModal'
 import { EditClientModal } from './EditClientModal'
 import { ConfirmationModal } from './ConfirmationModal'
+import { HelpModal } from './HelpModal'
 import { catalogApi } from '../services/api'
 
 function AppNavigation({ onLogout }) {
@@ -28,6 +29,7 @@ function AppNavigation({ onLogout }) {
   const { modals, modalData, closeModal, openModal, confirmationData } = useModal()
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isVersionOpen, setIsVersionOpen] = useState(false)
+  const [isHelpOpen, setIsHelpOpen] = useState(false)
   
   const user = JSON.parse(localStorage.getItem('user') || '{}')
   const userName = user.name || 'Usuário'
@@ -96,7 +98,25 @@ function AppNavigation({ onLogout }) {
           </div>
 
           {/* User Info and Avatar - Right Side */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            {/* Help Button */}
+            <button
+              onClick={() => setIsHelpOpen(true)}
+              className="hidden sm:flex items-center justify-center w-10 h-10 rounded-lg text-eden-primary hover:bg-stone-100 transition-colors"
+              title="Central de Ajuda (Ctrl+?)"
+              aria-label="Abrir ajuda"
+            >
+              <i className="fa-solid fa-circle-question text-lg"></i>
+            </button>
+
+            {/* Mobile Help Button */}
+            <button
+              onClick={() => setIsHelpOpen(true)}
+              className="sm:hidden p-2 text-eden-primary hover:bg-stone-100 rounded-lg transition-colors"
+              title="Ajuda"
+            >
+              <i className="fa-solid fa-circle-question"></i>
+            </button>
             {/* Version Button */}
             <div className="relative hidden sm:block">
               <button
@@ -322,6 +342,10 @@ function AppNavigation({ onLogout }) {
         confirmText={confirmationData.confirmText}
         cancelText={confirmationData.cancelText}
         isDangerous={confirmationData.isDangerous}
+      />
+      <HelpModal
+        isOpen={isHelpOpen}
+        onClose={() => setIsHelpOpen(false)}
       />
     </>
   )
